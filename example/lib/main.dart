@@ -22,11 +22,12 @@ class MyApp extends StatelessWidget {
             width: 200,
             height: 200,
             child: RadarChartCustomPaint(
-              chartBorderColor:,
-              chartFillColor:,
-              data: [],
-              features: [],
-              ticks: [],
+              dotColor: Color(0xFF8072F3),
+              chartBorderColor: Color(0xFF8072F3),
+              chartFillColor: Color(0x668072F3),
+              ticks: [1, 2, 3, 4, 5,6],
+              features: ['AA', 'BB', 'CC', 'DD', 'EE','FF'],
+              data: [1,2,3,4,5,6],
             ),
           ),
         )

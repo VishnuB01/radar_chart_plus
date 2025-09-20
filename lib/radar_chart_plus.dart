@@ -1,4 +1,5 @@
 library;
+
 import 'dart:math';
 import 'package:flutter/material.dart';
 
@@ -39,7 +40,6 @@ class RadarChartCustomPaint extends StatelessWidget {
   }
 }
 
-/// The custom painter that draws the radar chart.
 class RadarChartPainter extends CustomPainter {
   final List<int> ticks;
   final List<String> features;
@@ -99,7 +99,7 @@ class RadarChartPainter extends CustomPainter {
       final tickRadius = radius * tick / ticks.last;
       textPainter.text = TextSpan(
         text: tick.toString(),
-        style: TextStyle(color: labelColor, fontSize: 10),
+        style: TextStyle(color: labelColor),
       );
       textPainter.layout();
       textPainter.paint(
@@ -130,7 +130,7 @@ class RadarChartPainter extends CustomPainter {
         style: TextStyle(
           color: labelColor,
           fontWeight: FontWeight.bold,
-          fontSize: 12,
+          
         ),
       );
       textPainter.layout();
@@ -143,8 +143,7 @@ class RadarChartPainter extends CustomPainter {
       canvas.translate(labelX, labelY);
 
       // Flip text on the left side to be upright
-      if (currentAngle > pi / 2 && currentAngle < 3 * pi / 2) {
-      }
+      if (currentAngle > pi / 2 && currentAngle < 3 * pi / 2) {}
 
       // canvas.rotate(rotationAngle);
       canvas.rotate(labelAngle[index]);
