@@ -240,7 +240,11 @@ List<double> generateAngles(int length) {
     case 3:
       return [0 * pi / 180, 300 * pi / 180, 60 * pi / 180];
     case 4:
-      return [0 * pi / 180, 90 * pi / 180, 0 * pi / 180, 270 * pi / 180];
+      return [
+        0 * pi / 180,
+        90 * pi / 180,
+        0 * pi / 180,
+        270 * pi / 180];
     case 5:
       return [
         0 * pi / 180,
@@ -273,11 +277,11 @@ List<double> generateAngles(int length) {
         0 * pi / 180,
         50 * pi / 180,
         90 * pi / 180,
-        320 * pi / 180,
+        315 * pi / 180,
         0 * pi / 180,
         50 * pi / 180,
         270 * pi / 180,
-        310 * pi / 180,
+        315 * pi / 180,
       ];
 
     case 9:
