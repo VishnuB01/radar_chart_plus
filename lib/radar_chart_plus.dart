@@ -3,7 +3,7 @@ library;
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class RadarChartCustomPaint extends StatelessWidget {
+class RadarChartCustomPaint extends StatefulWidget {
   final List<int> ticks;
   final List<String> features;
   final List<double> data;
@@ -22,6 +22,19 @@ class RadarChartCustomPaint extends StatelessWidget {
   });
 
   @override
+  State<RadarChartCustomPaint> createState() => _RadarChartCustomPaintState();
+}
+
+class _RadarChartCustomPaintState extends State<RadarChartCustomPaint> {
+  List<double> angles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    angles.addAll(generateAngles(widget.data.length));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size.infinite,
@@ -30,11 +43,12 @@ class RadarChartCustomPaint extends StatelessWidget {
           context,
         ).colorScheme.onSurface.withValues(alpha: 0.5),
         labelColor: Theme.of(context).colorScheme.onSurface,
-        ticks: ticks,
-        features: features,
-        data: data,
-        chartBorderColor: chartBorderColor,
-        chartFillColor: chartFillColor,
+        ticks: widget.ticks,
+        features: widget.features,
+        data: widget.data,
+        chartBorderColor: widget.chartBorderColor,
+        chartFillColor: widget.chartFillColor,
+        labelAngles: angles,
       ),
     );
   }
@@ -53,6 +67,7 @@ class RadarChartPainter extends CustomPainter {
     required this.data,
     required this.chartBorderColor,
     required this.chartFillColor,
+    required this.labelAngles,
     this.dotColor,
   });
 
@@ -61,6 +76,7 @@ class RadarChartPainter extends CustomPainter {
   final Color? dotColor;
   final Color labelColor;
   final Color borderColor;
+  final List<double> labelAngles;
 
   final List<double> labelAngle = const [
     0.0,
@@ -70,6 +86,26 @@ class RadarChartPainter extends CustomPainter {
     pi / 3,
     300 * pi / 180,
   ];
+
+  final List<double> dummyAngle = const [
+    0 * pi / 180,
+    60 * pi / 180,
+    300 * pi / 180,
+    0 * pi / 180,
+    60 * pi / 180,
+    300 * pi / 180,
+  ];
+
+  List<double> dynamicAngle = [];
+
+  void generateAngle() {
+    int length = (data.length ~/ 2);
+    print('length :$length');
+    double previousAngle = 0;
+    for (int i = 0; i < length; i++) {
+      // dynamicAngle.add(previousAngle * )
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -127,11 +163,7 @@ class RadarChartPainter extends CustomPainter {
       // Draw feature labels outside the chart
       textPainter.text = TextSpan(
         text: feature,
-        style: TextStyle(
-          color: labelColor,
-          fontWeight: FontWeight.bold,
-          
-        ),
+        style: TextStyle(color: labelColor, fontWeight: FontWeight.bold),
       );
       textPainter.layout();
 
@@ -146,7 +178,8 @@ class RadarChartPainter extends CustomPainter {
       if (currentAngle > pi / 2 && currentAngle < 3 * pi / 2) {}
 
       // canvas.rotate(rotationAngle);
-      canvas.rotate(labelAngle[index]);
+      // canvas.rotate(dummyAngle[index]);
+      canvas.rotate(labelAngles[index]);
       textPainter.paint(
         canvas,
         Offset(-textPainter.width / 2, -textPainter.height / 2),
@@ -201,3 +234,86 @@ class RadarChartPainter extends CustomPainter {
         oldDelegate.ticks != ticks;
   }
 }
+
+List<double> generateAngles(int length) {
+  switch (length) {
+    case 3:
+      return [0 * pi / 180, 300 * pi / 180, 60 * pi / 180];
+    case 4:
+      return [0 * pi / 180, 90 * pi / 180, 0 * pi / 180, 270 * pi / 180];
+    case 5:
+      return [
+        0 * pi / 180,
+        75 * pi / 180,
+        320 * pi / 180,
+        30 * pi / 180,
+        290 * pi / 180,
+      ];
+    case 6:
+      return [
+        0 * pi / 180,
+        60 * pi / 180,
+        300 * pi / 180,
+        0 * pi / 180,
+        60 * pi / 180,
+        300 * pi / 180,
+      ];
+    case 7:
+      return [
+        0 * pi / 180,
+        55 * pi / 180,
+        280 * pi / 180,
+        340 * pi / 180,
+        30 * pi / 180,
+        70 * pi / 180,
+        310 * pi / 180,
+      ];
+    case 8:
+      return [
+        0 * pi / 180,
+        50 * pi / 180,
+        90 * pi / 180,
+        320 * pi / 180,
+        0 * pi / 180,
+        50 * pi / 180,
+        270 * pi / 180,
+        310 * pi / 180,
+      ];
+
+    case 9:
+      return [
+        0 * pi / 180,
+        40 * pi / 180,
+        80 * pi / 180,
+        310 * pi / 180,
+        340 * pi / 180,
+        20 * pi / 180,
+        60 * pi / 180,
+        280 * pi / 180,
+        320 * pi / 180,
+      ];
+    case 10:
+      return [
+        0 * pi / 180,
+        40 * pi / 180,
+        75 * pi / 180,
+        290 * pi / 180,
+        325 * pi / 180,
+        0 * pi / 180,
+        40 * pi / 180,
+        75 * pi / 180,
+        290 * pi / 180,
+        325 * pi / 180,
+      ];
+
+    default:
+      return [0.0];
+  }
+}
+
+// 0 * pi / 180,
+// 60 * pi / 180,
+// 300 * pi / 180,
+// 0 * pi / 180,
+// 60 * pi / 180,
+// 300 * pi / 180,
