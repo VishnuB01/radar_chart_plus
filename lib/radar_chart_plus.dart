@@ -78,35 +78,6 @@ class RadarChartPainter extends CustomPainter {
   final Color borderColor;
   final List<double> labelAngles;
 
-  final List<double> labelAngle = const [
-    0.0,
-    pi / 3,
-    300 * pi / 180,
-    0,
-    pi / 3,
-    300 * pi / 180,
-  ];
-
-  final List<double> dummyAngle = const [
-    0 * pi / 180,
-    60 * pi / 180,
-    300 * pi / 180,
-    0 * pi / 180,
-    60 * pi / 180,
-    300 * pi / 180,
-  ];
-
-  List<double> dynamicAngle = [];
-
-  void generateAngle() {
-    int length = (data.length ~/ 2);
-    print('length :$length');
-    double previousAngle = 0;
-    for (int i = 0; i < length; i++) {
-      // dynamicAngle.add(previousAngle * )
-    }
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
     final centerX = size.width / 2.0;
@@ -177,8 +148,6 @@ class RadarChartPainter extends CustomPainter {
       // Flip text on the left side to be upright
       if (currentAngle > pi / 2 && currentAngle < 3 * pi / 2) {}
 
-      // canvas.rotate(rotationAngle);
-      // canvas.rotate(dummyAngle[index]);
       canvas.rotate(labelAngles[index]);
       textPainter.paint(
         canvas,
@@ -240,11 +209,7 @@ List<double> generateAngles(int length) {
     case 3:
       return [0 * pi / 180, 300 * pi / 180, 60 * pi / 180];
     case 4:
-      return [
-        0 * pi / 180,
-        90 * pi / 180,
-        0 * pi / 180,
-        270 * pi / 180];
+      return [0 * pi / 180, 90 * pi / 180, 0 * pi / 180, 270 * pi / 180];
     case 5:
       return [
         0 * pi / 180,
