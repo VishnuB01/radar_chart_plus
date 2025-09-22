@@ -3,7 +3,7 @@ library;
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class RadarChartCustomPaint extends StatefulWidget {
+class RadarChartPlus extends StatefulWidget {
   final List<int> ticks;
   final List<String> features;
   final List<double> data;
@@ -11,7 +11,7 @@ class RadarChartCustomPaint extends StatefulWidget {
   final Color chartFillColor;
   final Color? dotColor;
 
-  const RadarChartCustomPaint({
+  const RadarChartPlus({
     super.key,
     required this.ticks,
     required this.features,
@@ -22,10 +22,10 @@ class RadarChartCustomPaint extends StatefulWidget {
   });
 
   @override
-  State<RadarChartCustomPaint> createState() => _RadarChartCustomPaintState();
+  State<RadarChartPlus> createState() => _RadarChartPlusState();
 }
 
-class _RadarChartCustomPaintState extends State<RadarChartCustomPaint> {
+class _RadarChartPlusState extends State<RadarChartPlus> {
   List<double> angles = [];
 
   @override
@@ -279,10 +279,3 @@ List<double> generateAngles(int length) {
       return [0.0];
   }
 }
-
-// 0 * pi / 180,
-// 60 * pi / 180,
-// 300 * pi / 180,
-// 0 * pi / 180,
-// 60 * pi / 180,
-// 300 * pi / 180,

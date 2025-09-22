@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
               SizedBox(
                 width: 200,
                 height: 200,
-                child: RadarChartCustomPaint(
+                child: RadarChartPlus(
                   dotColor: Color(0xFF8072F3),
                   chartBorderColor: Color(0xFF8072F3),
                   chartFillColor: Color(0x668072F3),
