@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class RadarChartPlus extends StatefulWidget {
-  final List<int> ticks;
-  final List<String> features;
+  final List<int>? ticks;
+  final List<String> labels;
   final List<double> data;
   final Color chartBorderColor;
   final Color chartFillColor;
@@ -13,13 +13,20 @@ class RadarChartPlus extends StatefulWidget {
 
   const RadarChartPlus({
     super.key,
-    required this.ticks,
-    required this.features,
+    this.ticks,
+    required this.labels,
     required this.data,
     required this.chartBorderColor,
     required this.chartFillColor,
     this.dotColor,
-  });
+  }) : assert(
+         data.length >= 3 && data.length <= 10,
+         'data length must be between 3 and 10',
+       ),
+       assert(
+         labels.length == data.length,
+         'Labels and data length should be same',
+       );
 
   @override
   State<RadarChartPlus> createState() => _RadarChartPlusState();
@@ -33,9 +40,15 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     super.initState();
     angles.addAll(generateAngles(widget.data.length));
   }
-
+  late List<int> ticks;
   @override
   Widget build(BuildContext context) {
+    if (widget.ticks == null) {
+      final largest = widget.data.reduce((a, b) => a > b ? a : b).ceil();
+      ticks = List<int>.generate(largest, (i) => i + 1);
+    } else {
+      ticks = widget.ticks!;
+    }
     return CustomPaint(
       size: Size.infinite,
       painter: RadarChartPainter(
@@ -43,12 +56,13 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
           context,
         ).colorScheme.onSurface.withValues(alpha: 0.5),
         labelColor: Theme.of(context).colorScheme.onSurface,
-        ticks: widget.ticks,
-        features: widget.features,
+        ticks: ticks,
+        features: widget.labels,
         data: widget.data,
         chartBorderColor: widget.chartBorderColor,
         chartFillColor: widget.chartFillColor,
         labelAngles: angles,
+        dotColor: widget.dotColor
       ),
     );
   }
@@ -112,8 +126,8 @@ class RadarChartPainter extends CustomPainter {
       textPainter.paint(
         canvas,
         Offset(
-          centerX - (textPainter.width / 2) + 5,
-          centerY - (tickRadius - textPainter.height / 2) - 2,
+          centerX - (textPainter.width / 2) + 6,
+          centerY - (tickRadius - textPainter.height / 2) - 5,
         ),
       );
     }
@@ -156,9 +170,7 @@ class RadarChartPainter extends CustomPainter {
       canvas.restore();
     });
 
-    // 4. Draw the data graph (path, fill, and dots)
     final path = Path();
-
     final graphFillPaint = Paint()
       ..color = chartFillColor
       ..style = PaintingStyle.fill;

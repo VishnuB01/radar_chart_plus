@@ -1,6 +1,6 @@
 name: radar_chart_plus
-description: "A Simple Flutter Radar Chart Package"
-version: 0.0.1
+description: "A versatile Flutter package for creating beautiful and customizable radar charts. Easily visualize multivariate data for comparisons and analysis."
+version: 0.0.2
 homepage:
 
 environment:
