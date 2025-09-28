@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:radar_chart_plus/radar_chart_plus.dart';
 
 void main() {
-  test('adds one to input values', () {
-    final tester = RadarChartPlus(
+  test('RadarChartPlus can be created', () {
+     RadarChartPlus(
       dotColor: Color(0xFF8072F3),
       chartBorderColor: Color(0xFF8072F3),
       chartFillColor: Color(0x668072F3),

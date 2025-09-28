@@ -1,3 +1,8 @@
-## 0.0.1
+## 1.0.1
+* Fixed warnings and improved README
+* Added example folder
+* Added LICENSE file
+* Minor improvements for pub.dev scoring
 
-* TODO: Describe initial release.
+## 0.0.1
+* Initial release
