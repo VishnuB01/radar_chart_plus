@@ -6,7 +6,7 @@ import 'package:radar_chart_plus/radar_chart_plus.dart';
 
 void main() {
   test('RadarChartPlus can be created', () {
-     RadarChartPlus(
+    RadarChartPlus(
       dotColor: Color(0xFF8072F3),
       chartBorderColor: Color(0xFF8072F3),
       chartFillColor: Color(0x668072F3),

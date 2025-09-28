@@ -40,6 +40,7 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     super.initState();
     angles.addAll(generateAngles(widget.data.length));
   }
+
   late List<int> ticks;
   @override
   Widget build(BuildContext context) {
@@ -62,7 +63,7 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
         chartBorderColor: widget.chartBorderColor,
         chartFillColor: widget.chartFillColor,
         labelAngles: angles,
-        dotColor: widget.dotColor
+        dotColor: widget.dotColor,
       ),
     );
   }
