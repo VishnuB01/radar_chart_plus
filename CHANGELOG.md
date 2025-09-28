@@ -1,4 +1,4 @@
-## 1.0.1
+## 1.0.0
 * Fixed warnings and improved README
 * Added example folder
 * Added LICENSE file
