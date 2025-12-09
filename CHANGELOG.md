@@ -1,3 +1,6 @@
+## 1.0.3
+* Minor improvements for pub.dev scoring
+
 ## 1.0.2
 * Minor improvements for pub.dev scoring
 
