@@ -75,7 +75,9 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     return CustomPaint(
       size: Size.infinite,
       painter: RadarChartPainter(
-        borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+        borderColor: Theme.of(
+          context,
+        ).colorScheme.onSurface.withValues(alpha: 0.5),
         labelColor: Theme.of(context).colorScheme.onSurface,
         ticks: ticks,
         features: widget.labels,
