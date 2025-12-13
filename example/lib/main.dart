@@ -19,8 +19,8 @@ class MyApp extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                width: 200,
-                height: 200,
+                width: 400,
+                height: 400,
                 child: RadarChartPlus(
                   /// The color of the dots on the chart.
                   dotColor: Color(0xFF8072F3),
@@ -35,10 +35,10 @@ class MyApp extends StatelessWidget {
                   ticks: [2, 4, 6, 8, 10],
 
                   /// The labels to display on the chart.
-                  labels: ['AA', 'BB', 'CC', 'DD', 'EE', 'FF'],
+                  labels: ['AA', 'BB', 'CC', 'DD', 'EE', 'FF','gg','hh','AA', 'BB', 'CC', 'DD'],
 
                   /// The data to display on the chart.
-                  data: [3, 2, 5, 6, 5, 9],
+                  data: [3, 2, 5, 6, 5, 9,8,6,3, 2, 5, 6],
                 ),
               ),
 
@@ -59,8 +59,8 @@ class MyApp extends StatelessWidget {
                   ticks: [2, 4, 6],
 
                   /// The labels to display on the chart.
-                  labels: ['AA', 'BB', 'CC'],
-                  data: [3, 2, 5],
+                  labels: ['AA', 'BB', 'CC','DD','EE'],
+                  data: [3, 2, 5,2,1],
                 ),
               ),
             ],
