@@ -38,8 +38,8 @@ class RadarChartPlus extends StatefulWidget {
     required this.chartFillColor,
     this.dotColor,
   }) : assert(
-         data.length >= 3 && data.length <= 15,
-         'data length must be between 3 and 10',
+         data.length >= 3,
+         'data length must be greater than 2',
        ),
        assert(
          labels.length == data.length,
@@ -75,9 +75,7 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     return CustomPaint(
       size: Size.infinite,
       painter: RadarChartPainter(
-        borderColor: Theme.of(
-          context,
-        ).colorScheme.onSurface.withValues(alpha: 0.5),
+        borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
         labelColor: Theme.of(context).colorScheme.onSurface,
         ticks: ticks,
         features: widget.labels,
@@ -263,18 +261,82 @@ class RadarChartPainter extends CustomPainter {
   }
 }
 
+/// Generates a list of rotation angles for the feature labels based on the
+/// number of data points.
+///
+/// These are pre-calculated values to ensure labels are oriented legibly.
 List<double> generateAngles(int length) {
-  List<double> rotations = [];
+  switch (length) {
+    case 3:
+      return [0 * pi / 180, 300 * pi / 180, 60 * pi / 180];
+    case 4:
+      return [0 * pi / 180, 90 * pi / 180, 0 * pi / 180, 270 * pi / 180];
+    case 5:
+      return [
+        0 * pi / 180,
+        75 * pi / 180,
+        320 * pi / 180,
+        30 * pi / 180,
+        290 * pi / 180,
+      ];
+    case 6:
+      return [
+        0 * pi / 180,
+        60 * pi / 180,
+        300 * pi / 180,
+        0 * pi / 180,
+        60 * pi / 180,
+        300 * pi / 180,
+      ];
+    case 7:
+      return [
+        0 * pi / 180,
+        55 * pi / 180,
+        280 * pi / 180,
+        340 * pi / 180,
+        30 * pi / 180,
+        70 * pi / 180,
+        310 * pi / 180,
+      ];
+    case 8:
+      return [
+        0 * pi / 180,
+        50 * pi / 180,
+        90 * pi / 180,
+        315 * pi / 180,
+        0 * pi / 180,
+        50 * pi / 180,
+        270 * pi / 180,
+        315 * pi / 180,
+      ];
 
-  for (int i = 0; i < length; i++) {
-    double angle = (2 * pi / length) * i;
+    case 9:
+      return [
+        0 * pi / 180,
+        40 * pi / 180,
+        80 * pi / 180,
+        310 * pi / 180,
+        340 * pi / 180,
+        20 * pi / 180,
+        60 * pi / 180,
+        280 * pi / 180,
+        320 * pi / 180,
+      ];
+    case 10:
+      return [
+        0 * pi / 180,
+        40 * pi / 180,
+        75 * pi / 180,
+        290 * pi / 180,
+        325 * pi / 180,
+        0 * pi / 180,
+        40 * pi / 180,
+        75 * pi / 180,
+        290 * pi / 180,
+        325 * pi / 180,
+      ];
 
-    // Flip bottom half for readable orientation
-    if (angle > pi / 2 && angle < 3 * pi / 2) {
-      angle += pi;
-    }
-
-    rotations.add(angle);
+    default:
+      return [0.0];
   }
-  return rotations;
 }
