@@ -35,10 +35,10 @@ class MyApp extends StatelessWidget {
                   ticks: [2, 4, 6, 8, 10],
 
                   /// The labels to display on the chart.
-                  labels: ['AA', 'BB', 'CC', 'DD', 'EE', 'FF','gg','hh','AA', 'BB', 'CC', 'DD'],
+                  labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17'],
 
                   /// The data to display on the chart.
-                  data: [3, 2, 5, 6, 5, 9,8,6,3, 2, 5, 6],
+                  data: [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8],
                 ),
               ),
 
