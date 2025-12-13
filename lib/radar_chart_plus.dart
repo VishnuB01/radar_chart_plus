@@ -37,10 +37,7 @@ class RadarChartPlus extends StatefulWidget {
     required this.chartBorderColor,
     required this.chartFillColor,
     this.dotColor,
-  }) : assert(
-         data.length >= 3,
-         'data length must be greater than 2',
-       ),
+  }) : assert(data.length >= 3, 'data length must be greater than 2'),
        assert(
          labels.length == data.length,
          'Labels and data length should be same',

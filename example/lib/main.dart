@@ -35,10 +35,28 @@ class MyApp extends StatelessWidget {
                   ticks: [2, 4, 6, 8, 10],
 
                   /// The labels to display on the chart.
-                  labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17'],
+                  labels: [
+                    '1',
+                    '2',
+                    '3',
+                    '4',
+                    '5',
+                    '6',
+                    '7',
+                    '8',
+                    '9',
+                    '10',
+                    '11',
+                    '12',
+                    '13',
+                    '14',
+                    '15',
+                    '16',
+                    '17',
+                  ],
 
                   /// The data to display on the chart.
-                  data: [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8],
+                  data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8],
                 ),
               ),
 
@@ -59,8 +77,8 @@ class MyApp extends StatelessWidget {
                   ticks: [2, 4, 6],
 
                   /// The labels to display on the chart.
-                  labels: ['AA', 'BB', 'CC','DD','EE'],
-                  data: [3, 2, 5,2,1],
+                  labels: ['AA', 'BB', 'CC', 'DD', 'EE'],
+                  data: [3, 2, 5, 2, 1],
                 ),
               ),
             ],
