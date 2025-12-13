@@ -19,7 +19,14 @@ This package helps you visualize multi-dimensional data in a clean, interactive 
 
 ## Getting started
 ```dart
-const like = 'radar_chart_plus';
+RadarChartPlus(
+  dotColor: Color(0xFF8072F3),
+  chartBorderColor: Color(0xFF8072F3),
+  chartFillColor: Color(0x668072F3),
+  ticks: [2, 4, 6],
+  labels: ['AA', 'BB', 'CC'],
+  data: [3, 2, 5],
+),
 ```
 
 ## Additional information   
