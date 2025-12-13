@@ -1,3 +1,8 @@
+## [2.0.0]
+
+### Major Updates
+- Added support for unlimited labels, along with enhanced customization options to give you more control than ever.
+
 ## 1.0.3
 * Minor improvements for pub.dev scoring
 
