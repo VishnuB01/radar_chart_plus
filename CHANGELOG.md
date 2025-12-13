@@ -1,3 +1,8 @@
+## [2.0.1]
+
+### Fixes
+- Minor bugfixes
+
 ## [2.0.0]
 
 ### Major Updates

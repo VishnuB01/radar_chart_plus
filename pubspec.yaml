@@ -1,6 +1,6 @@
 name: radar_chart_plus
 description: "A versatile Flutter package for creating beautiful and customizable radar charts. Easily visualize multivariate data for comparisons and analysis."
-version: 2.0.0
+version: 2.0.1
 homepage: "https://github.com/VishnuB01/radar_chart_plus/blob/main/README.md"
 repository: "https://github.com/VishnuB01/radar_chart_plus"
 topics:
