@@ -47,3 +47,9 @@ Contributions are welcome! If you'd like to improve the package, follow these st
 4. Submit a Pull Request describing what you changed and why
 
 5. The PR will be reviewed and merged if everything looks good
+
+## Contributors
+
+<a href="https://github.com/VishnuB01/radar_chart_plus/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=VishnuB01/radar_chart_plus" />
+</a>
