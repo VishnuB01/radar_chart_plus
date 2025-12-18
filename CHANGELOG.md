@@ -3,6 +3,11 @@
 ### Fixes
 - Fixes for pub scoring
 
+## [2.0.2]
+
+### Fixes
+- Fixes for pub scoring
+
 ## [2.0.1]
 
 ### Fixes
