@@ -146,9 +146,25 @@ class RadarChartPlus extends StatefulWidget {
     this.ticks,
     required this.labels,
     this.dataSets,
+    @Deprecated(
+      'Use dataSets instead for better flexibility and multi-series support. '
+      'This parameter will be removed in version 3.0.0.',
+    )
     this.data,
+    @Deprecated(
+      'Use dataSets instead for better flexibility and multi-series support. '
+      'This parameter will be removed in version 3.0.0.',
+    )
     this.chartBorderColor,
+    @Deprecated(
+      'Use dataSets instead for better flexibility and multi-series support. '
+      'This parameter will be removed in version 3.0.0.',
+    )
     this.chartFillColor,
+    @Deprecated(
+      'Use dataSets instead for better flexibility and multi-series support. '
+      'This parameter will be removed in version 3.0.0.',
+    )
     this.dotColor,
   }) : assert(
          (dataSets != null) != (data != null),

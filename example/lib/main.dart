@@ -37,6 +37,7 @@ class MyApp extends StatelessWidget {
                 width: 400,
                 height: 400,
                 child: RadarChartPlus(
+                  chartBorderColor: Colors.red,
                   ticks: [2, 4, 6, 8, 10],
                   labels: [
                     'Speed',
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
                       label: 'Player A',
                     ),
                     RadarDataSet(
-                      data: [6, 7, 8,9, 10, 1],
+                      data: [6, 7, 8, 9, 10, 1],
                       borderColor: const Color(0xFFFF6B6B),
                       fillColor: const Color(0x66FF6B6B),
                       label: 'Player B',
@@ -158,6 +159,7 @@ class MyApp extends StatelessWidget {
                 height: 200,
                 child: RadarChartPlus(
                   /// The color of the dots on the chart.
+                  // dotColor: const Color(0xFF8072F3),
                   dotColor: const Color(0xFF8072F3),
 
                   /// The color of the chart border.

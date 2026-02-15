@@ -13,6 +13,7 @@ void main() {
       ticks: [2, 4, 6, 8, 10],
       labels: ['AA', 'BB', 'CC', 'DD', 'EE', 'FF'],
       data: [3, 2, 5, 6, 5, 9],
+
     );
   });
 }
