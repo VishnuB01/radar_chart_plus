@@ -13,29 +13,92 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Radar Chart Plus',
       home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Radar Chart Plus Examples'),
+          centerTitle: true,
+        ),
         body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
-            spacing: 10,
+            spacing: 24,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Example 1: Multiple Data Series (NEW FEATURE)
+              const Text(
+                'Multiple Data Series',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                'Compare multiple datasets on the same chart',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 400,
+                height: 400,
+                child: RadarChartPlus(
+                  ticks: [2, 4, 6, 8, 10],
+                  labels: [
+                    'Speed',
+                    'Power',
+                    'Defense',
+                    'Agility',
+                    'Intelligence',
+                    'Stamina',
+                  ],
+                  dataSets: [
+                    RadarDataSet(
+                      data: [1, 2, 3, 4, 5, 6],
+                      borderColor: const Color(0xFF8072F3),
+                      fillColor: const Color(0x668072F3),
+                      label: 'Player A',
+                    ),
+                    RadarDataSet(
+                      data: [6, 7, 8,9, 10, 1],
+                      borderColor: const Color(0xFFFF6B6B),
+                      fillColor: const Color(0x66FF6B6B),
+                      label: 'Player B',
+                    ),
+                    RadarDataSet(
+                      data: [6, 5, 4, 2, 2, 3],
+                      borderColor: const Color(0xFF10FF00),
+                      fillColor: const Color(0x6210FF00),
+                      label: 'Player A',
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 48),
+
+              // Example 2: Many Axes (17 points)
+              const Text(
+                'Many Axes Example',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                'Radar chart with 17 data points',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 width: 400,
                 height: 400,
                 child: RadarChartPlus(
                   /// The color of the dots on the chart.
-                  dotColor: Color(0xFF8072F3),
+                  dotColor: const Color(0xFF8072F3),
 
                   /// The color of the chart border.
-                  chartBorderColor: Color(0xFF8072F3),
+                  chartBorderColor: const Color(0xFF8072F3),
 
                   /// The color of the chart fill.
-                  chartFillColor: Color(0x668072F3),
+                  chartFillColor: const Color(0x668072F3),
 
                   /// The ticks to display on the chart.
-                  ticks: [2, 4, 6, 8, 10],
+                  ticks: const [2, 4, 6, 8, 10],
 
                   /// The labels to display on the chart.
-                  labels: [
+                  labels: const [
                     '1',
                     '2',
                     '3',
@@ -56,29 +119,59 @@ class MyApp extends StatelessWidget {
                   ],
 
                   /// The data to display on the chart.
-                  data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8],
+                  data: const [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                  ],
                 ),
               ),
 
+              const Divider(height: 48),
+
+              // Example 3: Simple 5-Point Chart (Backward Compatibility)
+              const Text(
+                'Simple 5-Point Chart',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                'Basic usage with single data series',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 width: 200,
                 height: 200,
                 child: RadarChartPlus(
                   /// The color of the dots on the chart.
-                  dotColor: Color(0xFF8072F3),
+                  dotColor: const Color(0xFF8072F3),
 
                   /// The color of the chart border.
-                  chartBorderColor: Color(0xFF8072F3),
+                  chartBorderColor: const Color(0xFF8072F3),
 
                   /// The color of the chart fill.
-                  chartFillColor: Color(0x668072F3),
+                  chartFillColor: const Color(0x668072F3),
 
                   /// The ticks to display on the chart.
-                  ticks: [2, 4, 6],
+                  ticks: const [2, 4, 6],
 
                   /// The labels to display on the chart.
-                  labels: ['AA', 'BB', 'CC', 'DD', 'EE'],
-                  data: [3, 2, 5, 2, 1],
+                  labels: const ['AA', 'BB', 'CC', 'DD', 'EE'],
+                  data: const [3, 2, 5, 2, 1],
                 ),
               ),
             ],
