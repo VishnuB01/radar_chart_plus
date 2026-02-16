@@ -129,6 +129,10 @@ class RadarChartPlus extends StatefulWidget {
   /// For multiple series, use [dataSets] instead.
   final Color? dotColor;
 
+  /// The text style for feature labels.
+  /// If null, defaults to TextStyle(color: labelColor, fontWeight: FontWeight.bold).
+  final TextStyle? labelTextStyle;
+
   /// Creates a radar chart with multiple data series.
   ///
   /// Use [dataSets] for multiple series or the legacy single-series parameters
@@ -146,6 +150,7 @@ class RadarChartPlus extends StatefulWidget {
     this.ticks,
     required this.labels,
     this.dataSets,
+    this.labelTextStyle,
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
       'This parameter will be removed in version 3.0.0.',
@@ -266,6 +271,7 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
         features: widget.labels,
         dataSets: _dataSets,
         labelAngles: angles,
+        labelTextStyle: widget.labelTextStyle,
       ),
     );
   }
@@ -291,6 +297,10 @@ class RadarChartPainter extends CustomPainter {
   /// The rotation angles for each feature label.
   final List<double> labelAngles;
 
+  /// The text style for feature labels.
+  /// If null, defaults to TextStyle(color: labelColor, fontWeight: FontWeight.bold).
+  final TextStyle? labelTextStyle;
+
   /// Creates a [RadarChartPainter].
   RadarChartPainter({
     required this.labelColor,
@@ -299,6 +309,7 @@ class RadarChartPainter extends CustomPainter {
     required this.features,
     required this.dataSets,
     required this.labelAngles,
+    this.labelTextStyle,
   }) : assert(ticks.isNotEmpty, 'ticks cannot be empty'),
        assert(features.isNotEmpty, 'features cannot be empty'),
        assert(dataSets.isNotEmpty, 'dataSets cannot be empty'),
@@ -365,7 +376,9 @@ class RadarChartPainter extends CustomPainter {
       // Draw feature labels outside the chart
       textPainter.text = TextSpan(
         text: feature,
-        style: TextStyle(color: labelColor, fontWeight: FontWeight.bold),
+        style:
+            labelTextStyle ??
+            TextStyle(color: labelColor, fontWeight: FontWeight.bold),
       );
       textPainter.layout();
 
