@@ -11,6 +11,8 @@ topics:
   - diagram
 
 screenshots:
+  - description: "This image describes multi data series radar chart"
+    path: screenshots/multi_chart.png
   - description: "This image describes the radar chart."
     path: screenshots/screen_shot.jpg
 

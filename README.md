@@ -6,7 +6,7 @@ This package helps you visualize multi-dimensional data in a clean, interactive 
 ---
 
 <img src="https://raw.githubusercontent.com/VishnuB01/radar_chart_plus/main/example/lib/assets/chart_image.jpg" width="400" alt="Radar Chart Example">
-
+<img src="https://raw.githubusercontent.com/VishnuB01/radar_chart_plus/main/example/lib/assets/multi_chart.png" width="400" alt="Multi Radar Chart Example">
 ## Features
 
 - 🎯 Draw radar (spider) charts with ease

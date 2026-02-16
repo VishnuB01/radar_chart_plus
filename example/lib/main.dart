@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData.dark(),
       title: 'Radar Chart Plus',
       home: Scaffold(
         appBar: AppBar(
@@ -28,10 +29,7 @@ class MyApp extends StatelessWidget {
                 'Multiple Data Series',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              const Text(
-                'Compare multiple datasets on the same chart',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
+
               const SizedBox(height: 8),
               SizedBox(
                 width: 400,
