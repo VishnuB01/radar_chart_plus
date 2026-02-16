@@ -12,7 +12,7 @@ topics:
 
 screenshots:
   - description: "This image describes multi data series radar chart"
-    path: screenshots/multi_chart.png
+    path: screenshots/multi_chart.jpg
   - description: "This image describes the radar chart."
     path: screenshots/screen_shot.jpg
 
@@ -72,5 +72,5 @@ flutter: { }
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
-  # For details regarding fonts in packages, see
+# For details regarding fonts in packages, see
 # https://flutter.dev/to/font-from-package
