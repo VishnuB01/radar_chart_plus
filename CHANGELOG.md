@@ -1,3 +1,10 @@
+## [2.1.0]
+
+### Major Updates
+- Support for multiple data series in the radar chart.
+- Optional textStyle property for customizing label appearance.
+- Minor performance optimizations.
+
 ## [2.0.3]
 
 ### Fixes
