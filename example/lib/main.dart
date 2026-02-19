@@ -5,8 +5,15 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isHorizontal = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +32,30 @@ class MyApp extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Example 1: Multiple Data Series (NEW FEATURE)
-              const Text(
-                'Multiple Data Series',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    isHorizontal = !isHorizontal;
+                  });
+                },
+                child: const Text(
+                  'Multiple Data Series',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
 
               const SizedBox(height: 8),
               SizedBox(
-                width: 400,
                 height: 400,
                 child: RadarChartPlus(
+                  labelSpacing: 0,
+                  maxWordsPerLine: 1,
+                  labelTextAlign: TextAlign.end,
+                  labelTextStyle: TextStyle(
+                    overflow: TextOverflow.ellipsis,
+                    color: Colors.white,
+                  ),
+                  horizontalLabels: isHorizontal,
                   chartBorderColor: Colors.red,
                   ticks: [2, 4, 6, 8, 10],
                   labels: [
@@ -43,7 +64,7 @@ class MyApp extends StatelessWidget {
                     'Defense',
                     'Agility',
                     'Intelligence',
-                    'Stamina',
+                    'Tech & Development',
                   ],
                   dataSets: [
                     RadarDataSet(
@@ -84,6 +105,7 @@ class MyApp extends StatelessWidget {
                 width: 400,
                 height: 400,
                 child: RadarChartPlus(
+                  horizontalLabels: isHorizontal,
                   /// The color of the dots on the chart.
                   dotColor: const Color(0xFF8072F3),
 
@@ -156,6 +178,8 @@ class MyApp extends StatelessWidget {
                 width: 200,
                 height: 200,
                 child: RadarChartPlus(
+                  horizontalLabels: isHorizontal,
+                  labelSpacing: 0,
                   /// The color of the dots on the chart.
                   // dotColor: const Color(0xFF8072F3),
                   dotColor: const Color(0xFF8072F3),
