@@ -139,6 +139,37 @@ class RadarChartPlus extends StatefulWidget {
   /// Defaults to false (labels are rotated along their spoke angle).
   final bool horizontalLabels;
 
+  /// The amount of padding (in logical pixels) to reserve around the chart
+  /// for feature labels when [horizontalLabels] is true.
+  ///
+  /// Increasing this value shrinks the chart radius so that long side labels
+  /// fit within the widget without being clipped.
+  /// Has no effect when [horizontalLabels] is false.
+  /// Defaults to 0.
+  final double labelPadding;
+
+  /// The maximum number of words to display per line on a feature label.
+  ///
+  /// When a label contains more words than this value, the extra words
+  /// are wrapped onto new lines.
+  /// Set to 1 (default) for single-line labels.
+  /// Useful for long labels like 'Tech & Development' — set to 2 to show
+  /// two words per line.
+  final int maxWordsPerLine;
+
+  /// The text alignment for feature labels.
+  ///
+  /// Controls how multi-line labels are aligned when [maxWordsPerLine] causes
+  /// wrapping. Defaults to [TextAlign.center].
+  final TextAlign labelTextAlign;
+
+  /// The gap (in logical pixels) between the spoke tip and the feature label
+  /// when [horizontalLabels] is true.
+  ///
+  /// Increase this to push labels further away from the chart edge.
+  /// Defaults to 4.0.
+  final double labelSpacing;
+
   /// Creates a radar chart with multiple data series.
   ///
   /// Use [dataSets] for multiple series or the legacy single-series parameters
@@ -158,6 +189,10 @@ class RadarChartPlus extends StatefulWidget {
     this.dataSets,
     this.labelTextStyle,
     this.horizontalLabels = false,
+    this.labelPadding = 0.0,
+    this.maxWordsPerLine = 1,
+    this.labelTextAlign = TextAlign.center,
+    this.labelSpacing = 0,
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
       'This parameter will be removed in version 3.0.0.',
@@ -280,6 +315,10 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
         labelAngles: angles,
         labelTextStyle: widget.labelTextStyle,
         horizontalLabels: widget.horizontalLabels,
+        labelPadding: widget.labelPadding,
+        maxWordsPerLine: widget.maxWordsPerLine,
+        labelTextAlign: widget.labelTextAlign,
+        labelSpacing: widget.labelSpacing,
       ),
     );
   }
@@ -312,6 +351,19 @@ class RadarChartPainter extends CustomPainter {
   /// When true, draws all feature labels horizontally without rotation.
   final bool horizontalLabels;
 
+  /// The padding reserved around the chart for horizontal labels.
+  /// Only applied when [horizontalLabels] is true.
+  final double labelPadding;
+
+  /// The maximum number of words per line for feature labels.
+  final int maxWordsPerLine;
+
+  /// The text alignment for feature labels.
+  final TextAlign labelTextAlign;
+
+  /// The gap between the spoke tip and the feature label.
+  final double labelSpacing;
+
   /// Creates a [RadarChartPainter].
   RadarChartPainter({
     required this.labelColor,
@@ -322,6 +374,10 @@ class RadarChartPainter extends CustomPainter {
     required this.labelAngles,
     this.labelTextStyle,
     this.horizontalLabels = false,
+    this.labelPadding = 0.0,
+    this.maxWordsPerLine = 1,
+    this.labelTextAlign = TextAlign.center,
+    this.labelSpacing = 4.0,
   }) : assert(ticks.isNotEmpty, 'ticks cannot be empty'),
        assert(features.isNotEmpty, 'features cannot be empty'),
        assert(dataSets.isNotEmpty, 'dataSets cannot be empty'),
@@ -336,7 +392,12 @@ class RadarChartPainter extends CustomPainter {
     final centerX = size.width / 2.0;
     final centerY = size.height / 2.0;
     final centerOffset = Offset(centerX, centerY);
-    final radius = min(centerX, centerY) * 0.8;
+    // When horizontalLabels is enabled, shrink the radius by labelPadding so
+    // that labels on the left/right sides always fit within the widget bounds.
+    final double effectivePadding = horizontalLabels ? labelPadding : 0.0;
+    final radius =
+        (min(centerX, centerY) - effectivePadding).clamp(0.0, double.infinity) *
+        0.8;
     // The angle between each axis (spoke).
     final angleStep = (2 * pi) / features.length;
 
@@ -353,7 +414,7 @@ class RadarChartPainter extends CustomPainter {
 
     // 2. Draw the numerical labels for each tick circle.
     final textPainter = TextPainter(
-      textAlign: TextAlign.center,
+      textAlign: labelTextAlign,
       textDirection: TextDirection.ltr,
     );
     for (var tick in ticks) {
@@ -385,9 +446,11 @@ class RadarChartPainter extends CustomPainter {
       final featureOffset = Offset(x, y);
       canvas.drawLine(centerOffset, featureOffset, featureLinePaint);
 
-      // Draw feature labels outside the chart
+      // Draw feature labels outside the chart.
+      // Wrap label text: group words into chunks of maxWordsPerLine.
+      final String wrappedLabel = _wrapLabel(feature, maxWordsPerLine);
       textPainter.text = TextSpan(
-        text: feature,
+        text: wrappedLabel,
         style:
             labelTextStyle ??
             TextStyle(color: labelColor, fontWeight: FontWeight.bold),
@@ -414,11 +477,11 @@ class RadarChartPainter extends CustomPainter {
 
         double dx;
         if (cosA > axisTolerance) {
-          // Right quadrant: left-edge of text at spoke tip + small gap
-          dx = 4;
+          // Right quadrant: left-edge of text at spoke tip + gap
+          dx = labelSpacing;
         } else if (cosA < -axisTolerance) {
-          // Left quadrant: right-edge of text at spoke tip - small gap
-          dx = -textPainter.width - 4;
+          // Left quadrant: right-edge of text at spoke tip - gap
+          dx = -textPainter.width - labelSpacing;
         } else {
           // Top / bottom: centre horizontally
           dx = -textPainter.width / 2;
@@ -426,11 +489,11 @@ class RadarChartPainter extends CustomPainter {
 
         double dy;
         if (sinA > axisTolerance) {
-          // Bottom quadrant: top-edge of text at spoke tip + small gap
-          dy = 4;
+          // Bottom quadrant: top-edge of text at spoke tip + gap
+          dy = labelSpacing;
         } else if (sinA < -axisTolerance) {
-          // Top quadrant: bottom-edge of text at spoke tip - small gap
-          dy = -textPainter.height - 4;
+          // Top quadrant: bottom-edge of text at spoke tip - gap
+          dy = -textPainter.height - labelSpacing;
         } else {
           // Left / right: centre vertically
           dy = -textPainter.height / 2;
@@ -453,6 +516,45 @@ class RadarChartPainter extends CustomPainter {
     for (var dataSet in dataSets) {
       _drawDataPolygon(canvas, centerX, centerY, radius, angleStep, dataSet);
     }
+  }
+
+  /// Splits [label] into lines with at most [maxWords] real words each.
+  ///
+  /// A "word" is any token that contains at least one letter or digit.
+  /// Pure-symbol tokens (e.g. `&`, `-`, `/`) are not counted and stay
+  /// attached to the current line.
+  ///
+  /// Example: _wrapLabel('Tech & Development forever', 2)
+  ///          → 'Tech & Development\nforever'
+  String _wrapLabel(String label, int maxWords) {
+    if (maxWords <= 0) return label;
+    final tokens = label.split(' ');
+
+    // Regex: at least one letter or digit → counts as a real word
+    final wordPattern = RegExp(r'[a-zA-Z0-9]');
+
+    final lines = <String>[];
+    final currentLine = <String>[];
+    int wordCount = 0;
+
+    for (final token in tokens) {
+      final isWord = wordPattern.hasMatch(token);
+      if (isWord) {
+        // Real word: flush current line if the limit is reached
+        if (wordCount >= maxWords && currentLine.isNotEmpty) {
+          lines.add(currentLine.join(' '));
+          currentLine.clear();
+          wordCount = 0;
+        }
+        wordCount++;
+      }
+      // Symbols and real words both get added to the current line
+      currentLine.add(token);
+    }
+
+    if (currentLine.isNotEmpty) lines.add(currentLine.join(' '));
+
+    return lines.join('\n');
   }
 
   /// Draws a single data polygon for one data series

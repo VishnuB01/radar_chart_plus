@@ -48,6 +48,9 @@ class _MyAppState extends State<MyApp> {
               SizedBox(
                 height: 400,
                 child: RadarChartPlus(
+                  labelSpacing: 0,
+                  maxWordsPerLine: 1,
+                  labelTextAlign: TextAlign.end,
                   labelTextStyle: TextStyle(
                     overflow: TextOverflow.ellipsis,
                     color: Colors.white,
@@ -102,6 +105,7 @@ class _MyAppState extends State<MyApp> {
                 width: 400,
                 height: 400,
                 child: RadarChartPlus(
+                  horizontalLabels: isHorizontal,
                   /// The color of the dots on the chart.
                   dotColor: const Color(0xFF8072F3),
 
@@ -174,6 +178,8 @@ class _MyAppState extends State<MyApp> {
                 width: 200,
                 height: 200,
                 child: RadarChartPlus(
+                  horizontalLabels: isHorizontal,
+                  labelSpacing: 0,
                   /// The color of the dots on the chart.
                   // dotColor: const Color(0xFF8072F3),
                   dotColor: const Color(0xFF8072F3),
