@@ -5,8 +5,15 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isHorizontal = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +32,27 @@ class MyApp extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Example 1: Multiple Data Series (NEW FEATURE)
-              const Text(
-                'Multiple Data Series',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    isHorizontal = !isHorizontal;
+                  });
+                },
+                child: const Text(
+                  'Multiple Data Series',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
 
               const SizedBox(height: 8),
               SizedBox(
-                width: 400,
                 height: 400,
                 child: RadarChartPlus(
+                  labelTextStyle: TextStyle(
+                    overflow: TextOverflow.ellipsis,
+                    color: Colors.white,
+                  ),
+                  horizontalLabels: isHorizontal,
                   chartBorderColor: Colors.red,
                   ticks: [2, 4, 6, 8, 10],
                   labels: [
@@ -43,7 +61,7 @@ class MyApp extends StatelessWidget {
                     'Defense',
                     'Agility',
                     'Intelligence',
-                    'Stamina',
+                    'Tech & Development',
                   ],
                   dataSets: [
                     RadarDataSet(
