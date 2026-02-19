@@ -106,6 +106,7 @@ class _MyAppState extends State<MyApp> {
                 height: 400,
                 child: RadarChartPlus(
                   horizontalLabels: isHorizontal,
+
                   /// The color of the dots on the chart.
                   dotColor: const Color(0xFF8072F3),
 
@@ -180,6 +181,7 @@ class _MyAppState extends State<MyApp> {
                 child: RadarChartPlus(
                   horizontalLabels: isHorizontal,
                   labelSpacing: 0,
+
                   /// The color of the dots on the chart.
                   // dotColor: const Color(0xFF8072F3),
                   dotColor: const Color(0xFF8072F3),
