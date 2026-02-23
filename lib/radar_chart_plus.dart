@@ -91,6 +91,68 @@ class RadarDataSet {
   }
 }
 
+/// Holds information about a tapped dot for showing a tooltip.
+class _TooltipInfo {
+  final Offset position;
+  final String label;
+  final double value;
+  final Color color;
+
+  const _TooltipInfo({
+    required this.position,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+}
+
+/// Visual style for the dot-tap tooltip.
+///
+/// Pass an instance to [RadarChartPlus.tooltipStyle] to customise the look of
+/// the speech-bubble that appears when the user taps a data dot.
+class RadarTooltipStyle {
+  /// Width of the tooltip bubble (not including the arrow). Default: 140.
+  final double width;
+
+  /// Height of the tooltip bubble (not including the arrow). Default: 40.
+  final double height;
+
+  /// Background fill colour of the tooltip. Default: near-black.
+  final Color backgroundColor;
+
+  /// Text style applied to the label text inside the tooltip.
+  /// Defaults to white, 11 sp, semi-bold.
+  final TextStyle textStyle;
+
+  /// Height of the arrow triangle that points toward the dot. Default: 8.
+  final double arrowHeight;
+
+  /// Width of the arrow base. Default: 14.
+  final double arrowWidth;
+
+  /// Corner radius of the bubble rectangle. Default: 8.
+  final double borderRadius;
+
+  /// Tooltip center alignment. Default: true.
+  final bool toolTipCenterAlignment;
+
+  const RadarTooltipStyle({
+    this.width = 140.0,
+    this.height = 40.0,
+    this.backgroundColor = const Color(0xDD1C1C2E),
+    this.textStyle = const TextStyle(
+      color: Colors.white,
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      overflow: TextOverflow.ellipsis,
+    ),
+    this.arrowHeight = 8.0,
+    this.arrowWidth = 14.0,
+    this.borderRadius = 8.0,
+    this.toolTipCenterAlignment = true,
+  });
+}
+
 /// A widget that displays a radar chart (also known as a spider chart or web chart).
 ///
 /// This chart is useful for visualizing multivariate data in a 2D plot.
@@ -170,6 +232,15 @@ class RadarChartPlus extends StatefulWidget {
   /// Defaults to 4.0.
   final double labelSpacing;
 
+  /// When true, tapping on a data dot reveals a tooltip showing the feature
+  /// label and value. Tapping anywhere else dismisses the tooltip.
+  /// Defaults to true.
+  final bool dotTapEnabled;
+
+  /// Visual style for the dot-tap tooltip.
+  /// When null, the default [RadarTooltipStyle] is used.
+  final RadarTooltipStyle? tooltipStyle;
+
   /// Creates a radar chart with multiple data series.
   ///
   /// Use [dataSets] for multiple series or the legacy single-series parameters
@@ -193,6 +264,8 @@ class RadarChartPlus extends StatefulWidget {
     this.maxWordsPerLine = 1,
     this.labelTextAlign = TextAlign.center,
     this.labelSpacing = 0,
+    this.dotTapEnabled = true,
+    this.tooltipStyle,
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
       'This parameter will be removed in version 3.0.0.',
@@ -240,6 +313,9 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
   List<double> angles = [];
   late List<RadarDataSet> _dataSets;
 
+  /// The currently active tooltip, or null if none is shown.
+  _TooltipInfo? _activeTooltip;
+
   @override
   void initState() {
     super.initState();
@@ -285,6 +361,80 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
 
   late List<int> ticks;
 
+  /// Computes the pixel position of every dot given the widget [size].
+  ///
+  /// Returns a flat list of [_DotPosition] covering all data-sets and all
+  /// data-points within each set.
+  List<_DotPosition> _computeDotPositions(Size size) {
+    final centerX = size.width / 2.0;
+    final centerY = size.height / 2.0;
+    final double effectivePadding = widget.horizontalLabels
+        ? widget.labelPadding
+        : 0.0;
+    final radius =
+        (min(centerX, centerY) - effectivePadding).clamp(0.0, double.infinity) *
+        0.8;
+    final angleStep = (2 * pi) / widget.labels.length;
+
+    final result = <_DotPosition>[];
+    for (final dataSet in _dataSets) {
+      dataSet.data.asMap().forEach((index, value) {
+        final scaledValue = radius * value / ticks.last;
+        final currentAngle = angleStep * index - pi / 2;
+        final x = centerX + scaledValue * cos(currentAngle);
+        final y = centerY + scaledValue * sin(currentAngle);
+        result.add(
+          _DotPosition(
+            offset: Offset(x, y),
+            label: widget.labels[index],
+            value: value,
+            color: dataSet.dotColor ?? dataSet.borderColor,
+            dataSetLabel: dataSet.label,
+          ),
+        );
+      });
+    }
+    return result;
+  }
+
+  /// Hit-tests [tapPosition] against all dot positions and returns the closest
+  /// dot within [hitRadius] logical pixels, or null if none matches.
+  _DotPosition? _hitTest(
+    Offset tapPosition,
+    List<_DotPosition> dots, {
+    double hitRadius = 20.0,
+  }) {
+    _DotPosition? best;
+    double bestDist = hitRadius;
+    for (final dot in dots) {
+      final dist = (dot.offset - tapPosition).distance;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = dot;
+      }
+    }
+    return best;
+  }
+
+  void _onTapDown(TapDownDetails details, Size size) {
+    final dots = _computeDotPositions(size);
+    final hit = _hitTest(details.localPosition, dots);
+    setState(() {
+      if (hit != null) {
+        _activeTooltip = _TooltipInfo(
+          position: hit.offset,
+          label: hit.dataSetLabel != null
+              ? '${hit.dataSetLabel}: ${hit.value}'
+              : hit.label,
+          value: hit.value,
+          color: hit.color,
+        );
+      } else {
+        _activeTooltip = null;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // If ticks are not provided, generate them automatically.
@@ -302,26 +452,279 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
       ticks = widget.ticks!;
     }
 
-    return CustomPaint(
-      size: Size.infinite,
-      painter: RadarChartPainter(
-        borderColor: Theme.of(
-          context,
-        ).colorScheme.onSurface.withValues(alpha: 0.5),
-        labelColor: Theme.of(context).colorScheme.onSurface,
-        ticks: ticks,
-        features: widget.labels,
-        dataSets: _dataSets,
-        labelAngles: angles,
-        labelTextStyle: widget.labelTextStyle,
-        horizontalLabels: widget.horizontalLabels,
-        labelPadding: widget.labelPadding,
-        maxWordsPerLine: widget.maxWordsPerLine,
-        labelTextAlign: widget.labelTextAlign,
-        labelSpacing: widget.labelSpacing,
+    final painter = RadarChartPainter(
+      borderColor: Theme.of(
+        context,
+      ).colorScheme.onSurface.withValues(alpha: 0.5),
+      labelColor: Theme.of(context).colorScheme.onSurface,
+      ticks: ticks,
+      features: widget.labels,
+      dataSets: _dataSets,
+      labelAngles: angles,
+      labelTextStyle: widget.labelTextStyle,
+      horizontalLabels: widget.horizontalLabels,
+      labelPadding: widget.labelPadding,
+      maxWordsPerLine: widget.maxWordsPerLine,
+      labelTextAlign: widget.labelTextAlign,
+      labelSpacing: widget.labelSpacing,
+    );
+
+    if (!widget.dotTapEnabled) {
+      return CustomPaint(size: Size.infinite, painter: painter);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return GestureDetector(
+          onTapDown: (details) => _onTapDown(details, size),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CustomPaint(size: Size.infinite, painter: painter),
+              if (_activeTooltip != null)
+                _RadarTooltip(
+                  info: _activeTooltip!,
+                  chartSize: size,
+                  style: widget.tooltipStyle ?? const RadarTooltipStyle(),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Internal model keeping track of a dot's screen position and metadata.
+class _DotPosition {
+  final Offset offset;
+  final String label;
+  final double value;
+  final Color color;
+  final String? dataSetLabel;
+
+  const _DotPosition({
+    required this.offset,
+    required this.label,
+    required this.value,
+    required this.color,
+    this.dataSetLabel,
+  });
+}
+
+/// A styled tooltip bubble that floats above a tapped dot.
+class _RadarTooltip extends StatefulWidget {
+  final _TooltipInfo info;
+  final Size chartSize;
+  final RadarTooltipStyle style;
+
+  const _RadarTooltip({
+    required this.info,
+    required this.chartSize,
+    required this.style,
+  });
+
+  @override
+  State<_RadarTooltip> createState() => _RadarTooltipState();
+}
+
+class _RadarTooltipState extends State<_RadarTooltip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+  }
+
+  @override
+  void didUpdateWidget(_RadarTooltip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.info != widget.info) {
+      _ctrl
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = widget.style;
+    final bubbleW = st.width;
+    final bubbleH = st.height;
+    final arrowH = st.arrowHeight;
+    const margin = 6.0;
+    final labelAlignment = st.toolTipCenterAlignment;
+
+    final dotX = widget.info.position.dx;
+    final dotY = widget.info.position.dy;
+
+    // Prefer placing the bubble above the dot (arrow points down toward it).
+    // If it would clip the top edge, place it below (arrow points up).
+    final bool arrowDown = dotY - bubbleH - arrowH - margin >= 0;
+    final double totalH = bubbleH + arrowH;
+
+    double left = dotX - bubbleW / 2;
+    left = left.clamp(margin, widget.chartSize.width - bubbleW - margin);
+
+    final double top = arrowDown
+        ? dotY -
+              totalH // bubble above dot
+        : dotY; // bubble below dot
+
+    // Arrow horizontal anchor: where the dot is relative to the bubble.
+    final double arrowCenterX = (dotX - left).clamp(
+      st.arrowWidth,
+      bubbleW - st.arrowWidth,
+    );
+
+    return Positioned(
+      left: left,
+      top: top,
+      child: FadeTransition(
+        opacity: _fade,
+        child: CustomPaint(
+          painter: _TooltipBubblePainter(
+            color: st.backgroundColor,
+            bubbleWidth: bubbleW,
+            bubbleHeight: bubbleH,
+            arrowHeight: arrowH,
+            arrowWidth: st.arrowWidth,
+            arrowCenterX: arrowCenterX,
+            radius: st.borderRadius,
+            arrowDown: arrowDown,
+          ),
+          size: Size(bubbleW, totalH),
+          child: SizedBox(
+            width: bubbleW,
+            height: totalH,
+            child: Align(
+              alignment: arrowDown
+                  ? Alignment.topCenter
+                  : Alignment.bottomCenter,
+              child: SizedBox(
+                height: bubbleH,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: labelAlignment
+                      ? MainAxisAlignment.center
+                      : MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: widget.info.color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Text(widget.info.label, style: st.textStyle, maxLines: 1),
+                    const SizedBox(width: 6),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
+}
+
+/// Paints a rounded-rectangle speech bubble with a triangular arrow.
+///
+/// [arrowDown] = true  → arrow points downward (bubble is above the dot)
+/// [arrowDown] = false → arrow points upward  (bubble is below the dot)
+class _TooltipBubblePainter extends CustomPainter {
+  final Color color;
+  final double bubbleWidth;
+  final double bubbleHeight;
+  final double arrowHeight;
+  final double arrowWidth;
+  final double arrowCenterX;
+  final double radius;
+  final bool arrowDown;
+
+  const _TooltipBubblePainter({
+    required this.color,
+    required this.bubbleWidth,
+    required this.bubbleHeight,
+    required this.arrowHeight,
+    required this.arrowWidth,
+    required this.arrowCenterX,
+    required this.radius,
+    required this.arrowDown,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    // Shadow
+    final shadowPaint = Paint()
+      ..color = const Color(0x44000000)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+
+    final path = _buildPath();
+    canvas.drawPath(path, shadowPaint);
+    canvas.drawPath(path, paint);
+  }
+
+  Path _buildPath() {
+    final path = Path();
+    final double ax = arrowCenterX;
+    final double hw = arrowWidth / 2;
+
+    if (arrowDown) {
+      // Bubble occupies [0, bubbleHeight]; arrow below it.
+      final rect = Rect.fromLTWH(0, 0, bubbleWidth, bubbleHeight);
+      path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
+      // Arrow triangle pointing down
+      path.moveTo(ax - hw, bubbleHeight);
+      path.lineTo(ax + hw, bubbleHeight);
+      path.lineTo(ax, bubbleHeight + arrowHeight);
+      path.close();
+    } else {
+      // Arrow occupies [0, arrowHeight]; bubble below it.
+      final rect = Rect.fromLTWH(0, arrowHeight, bubbleWidth, bubbleHeight);
+      path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
+      // Arrow triangle pointing up
+      path.moveTo(ax - hw, arrowHeight);
+      path.lineTo(ax + hw, arrowHeight);
+      path.lineTo(ax, 0);
+      path.close();
+    }
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(_TooltipBubblePainter old) =>
+      old.color != color ||
+      old.bubbleWidth != bubbleWidth ||
+      old.bubbleHeight != bubbleHeight ||
+      old.arrowHeight != arrowHeight ||
+      old.arrowWidth != arrowWidth ||
+      old.arrowCenterX != arrowCenterX ||
+      old.radius != radius ||
+      old.arrowDown != arrowDown;
 }
 
 /// A custom painter for drawing the radar chart.

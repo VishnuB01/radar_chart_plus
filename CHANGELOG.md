@@ -1,6 +1,11 @@
+## [2.2.0]
+
+### Minor Update
+- Added tooltips for marker dots and customization options for tooltip
+
 ## [2.1.1]
 
-### Fixes
+### Minor Update
 - Updated chart labels alignment to display horizontally for improved readability and consistent visual presentation.
 - Label words per line & spacing options added
 
