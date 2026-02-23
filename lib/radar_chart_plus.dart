@@ -91,6 +91,21 @@ class RadarDataSet {
   }
 }
 
+/// Holds information about a tapped dot for showing a tooltip.
+class _TooltipInfo {
+  final Offset position;
+  final String label;
+  final double value;
+  final Color color;
+
+  const _TooltipInfo({
+    required this.position,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+}
+
 /// A widget that displays a radar chart (also known as a spider chart or web chart).
 ///
 /// This chart is useful for visualizing multivariate data in a 2D plot.
@@ -170,6 +185,11 @@ class RadarChartPlus extends StatefulWidget {
   /// Defaults to 4.0.
   final double labelSpacing;
 
+  /// When true, tapping on a data dot reveals a tooltip showing the feature
+  /// label and value. Tapping anywhere else dismisses the tooltip.
+  /// Defaults to false.
+  final bool dotTapEnabled;
+
   /// Creates a radar chart with multiple data series.
   ///
   /// Use [dataSets] for multiple series or the legacy single-series parameters
@@ -193,6 +213,7 @@ class RadarChartPlus extends StatefulWidget {
     this.maxWordsPerLine = 1,
     this.labelTextAlign = TextAlign.center,
     this.labelSpacing = 0,
+    this.dotTapEnabled = true,
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
       'This parameter will be removed in version 3.0.0.',
@@ -240,6 +261,9 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
   List<double> angles = [];
   late List<RadarDataSet> _dataSets;
 
+  /// The currently active tooltip, or null if none is shown.
+  _TooltipInfo? _activeTooltip;
+
   @override
   void initState() {
     super.initState();
@@ -285,6 +309,80 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
 
   late List<int> ticks;
 
+  /// Computes the pixel position of every dot given the widget [size].
+  ///
+  /// Returns a flat list of [_DotPosition] covering all data-sets and all
+  /// data-points within each set.
+  List<_DotPosition> _computeDotPositions(Size size) {
+    final centerX = size.width / 2.0;
+    final centerY = size.height / 2.0;
+    final double effectivePadding = widget.horizontalLabels
+        ? widget.labelPadding
+        : 0.0;
+    final radius =
+        (min(centerX, centerY) - effectivePadding).clamp(0.0, double.infinity) *
+        0.8;
+    final angleStep = (2 * pi) / widget.labels.length;
+
+    final result = <_DotPosition>[];
+    for (final dataSet in _dataSets) {
+      dataSet.data.asMap().forEach((index, value) {
+        final scaledValue = radius * value / ticks.last;
+        final currentAngle = angleStep * index - pi / 2;
+        final x = centerX + scaledValue * cos(currentAngle);
+        final y = centerY + scaledValue * sin(currentAngle);
+        result.add(
+          _DotPosition(
+            offset: Offset(x, y),
+            label: widget.labels[index],
+            value: value,
+            color: dataSet.dotColor ?? dataSet.borderColor,
+            dataSetLabel: dataSet.label,
+          ),
+        );
+      });
+    }
+    return result;
+  }
+
+  /// Hit-tests [tapPosition] against all dot positions and returns the closest
+  /// dot within [hitRadius] logical pixels, or null if none matches.
+  _DotPosition? _hitTest(
+    Offset tapPosition,
+    List<_DotPosition> dots, {
+    double hitRadius = 20.0,
+  }) {
+    _DotPosition? best;
+    double bestDist = hitRadius;
+    for (final dot in dots) {
+      final dist = (dot.offset - tapPosition).distance;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = dot;
+      }
+    }
+    return best;
+  }
+
+  void _onTapDown(TapDownDetails details, Size size) {
+    final dots = _computeDotPositions(size);
+    final hit = _hitTest(details.localPosition, dots);
+    setState(() {
+      if (hit != null) {
+        _activeTooltip = _TooltipInfo(
+          position: hit.offset,
+          label: hit.dataSetLabel != null
+              ? '${hit.dataSetLabel}: ${hit.value}'
+              : hit.label,
+          value: hit.value,
+          color: hit.color,
+        );
+      } else {
+        _activeTooltip = null;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // If ticks are not provided, generate them automatically.
@@ -302,23 +400,180 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
       ticks = widget.ticks!;
     }
 
-    return CustomPaint(
-      size: Size.infinite,
-      painter: RadarChartPainter(
-        borderColor: Theme.of(
-          context,
-        ).colorScheme.onSurface.withValues(alpha: 0.5),
-        labelColor: Theme.of(context).colorScheme.onSurface,
-        ticks: ticks,
-        features: widget.labels,
-        dataSets: _dataSets,
-        labelAngles: angles,
-        labelTextStyle: widget.labelTextStyle,
-        horizontalLabels: widget.horizontalLabels,
-        labelPadding: widget.labelPadding,
-        maxWordsPerLine: widget.maxWordsPerLine,
-        labelTextAlign: widget.labelTextAlign,
-        labelSpacing: widget.labelSpacing,
+    final painter = RadarChartPainter(
+      borderColor: Theme.of(
+        context,
+      ).colorScheme.onSurface.withValues(alpha: 0.5),
+      labelColor: Theme.of(context).colorScheme.onSurface,
+      ticks: ticks,
+      features: widget.labels,
+      dataSets: _dataSets,
+      labelAngles: angles,
+      labelTextStyle: widget.labelTextStyle,
+      horizontalLabels: widget.horizontalLabels,
+      labelPadding: widget.labelPadding,
+      maxWordsPerLine: widget.maxWordsPerLine,
+      labelTextAlign: widget.labelTextAlign,
+      labelSpacing: widget.labelSpacing,
+    );
+
+    if (!widget.dotTapEnabled) {
+      return CustomPaint(size: Size.infinite, painter: painter);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return GestureDetector(
+          onTapDown: (details) => _onTapDown(details, size),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CustomPaint(size: Size.infinite, painter: painter),
+              if (_activeTooltip != null)
+                _RadarTooltip(info: _activeTooltip!, chartSize: size),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Internal model keeping track of a dot's screen position and metadata.
+class _DotPosition {
+  final Offset offset;
+  final String label;
+  final double value;
+  final Color color;
+  final String? dataSetLabel;
+
+  const _DotPosition({
+    required this.offset,
+    required this.label,
+    required this.value,
+    required this.color,
+    this.dataSetLabel,
+  });
+}
+
+/// A styled tooltip bubble that floats above a tapped dot.
+class _RadarTooltip extends StatefulWidget {
+  final _TooltipInfo info;
+  final Size chartSize;
+
+  const _RadarTooltip({required this.info, required this.chartSize});
+
+  @override
+  State<_RadarTooltip> createState() => _RadarTooltipState();
+}
+
+class _RadarTooltipState extends State<_RadarTooltip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+  }
+
+  @override
+  void didUpdateWidget(_RadarTooltip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.info != widget.info) {
+      _ctrl
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const tooltipWidth = 140.0;
+    const tooltipHeight = 40.0;
+    const arrowH = 8.0;
+    const margin = 6.0;
+
+    final dotX = widget.info.position.dx;
+    final dotY = widget.info.position.dy;
+
+    // Prefer positioning the tooltip above the dot; flip below if it clips.
+    double left = dotX - tooltipWidth / 2;
+    left = left.clamp(margin, widget.chartSize.width - tooltipWidth - margin);
+
+    double top;
+    if (dotY - tooltipHeight - arrowH - margin >= 0) {
+      top = dotY - tooltipHeight - arrowH;
+    } else {
+      top = dotY + arrowH;
+    }
+
+    // Format value: show as integer if whole number, else 2 dp.
+    final valueStr = widget.info.value == widget.info.value.truncateToDouble()
+        ? widget.info.value.toInt().toString()
+        : widget.info.value.toStringAsFixed(2);
+
+    return Positioned(
+      left: left,
+      top: top,
+      child: FadeTransition(
+        opacity: _fade,
+        child: Container(
+          width: tooltipWidth,
+          height: tooltipHeight,
+          decoration: BoxDecoration(
+            color: const Color(0xDD1C1C2E),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x44000000),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(width: 10),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: widget.info.color,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  '${widget.info.label}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+          ),
+        ),
       ),
     );
   }

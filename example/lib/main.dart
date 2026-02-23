@@ -48,6 +48,7 @@ class _MyAppState extends State<MyApp> {
               SizedBox(
                 height: 400,
                 child: RadarChartPlus(
+                  dotTapEnabled: true,
                   labelSpacing: 0,
                   maxWordsPerLine: 1,
                   labelTextAlign: TextAlign.end,
@@ -68,7 +69,7 @@ class _MyAppState extends State<MyApp> {
                   ],
                   dataSets: [
                     RadarDataSet(
-                      data: [1, 2, 3, 4, 5, 6],
+                      data: [9, 2, 3, 4, 5, 6],
                       borderColor: const Color(0xFF8072F3),
                       fillColor: const Color(0x668072F3),
                       label: 'Player A',
