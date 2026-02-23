@@ -1,3 +1,8 @@
+## [2.2.1]
+
+### Fixes
+- Fixes for pub scoring
+
 ## [2.2.0]
 
 ### Minor Update
