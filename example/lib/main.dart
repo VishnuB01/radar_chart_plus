@@ -1,9 +1,8 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:radar_chart_plus/radar_chart_plus.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -13,199 +12,280 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isHorizontal = false;
+  bool _isDark = true;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.dark(),
       title: 'Radar Chart Plus',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Radar Chart Plus Examples'),
-          centerTitle: true,
+      debugShowCheckedModeBanner: false,
+      themeMode: _isDark ? ThemeMode.dark : ThemeMode.light,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: const Color(0xFF6C63FF),
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: const Color(0xFF6C63FF),
+        brightness: Brightness.dark,
+      ),
+      home: DemoPage(
+        isDark: _isDark,
+        onToggleTheme: () => setState(() => _isDark = !_isDark),
+      ),
+    );
+  }
+}
+
+// ─── label & color pools ───────────────────────────────────────────────────
+
+const _labels = [
+  'AAAA',
+  'BBBB',
+  'CCCC',
+  'DDDD',
+  'EEEE',
+  'FFFF',
+  'GGGG',
+  'HHHH',
+  'IIII',
+  'JJJJ',
+  'KKKK',
+  'LLLL',
+];
+
+const _seriesColors = [
+  Color(0xFF6C63FF),
+  Color(0xFFFF6B9D),
+  Color(0xFF43E8A0),
+  Color(0xFFFFA94D),
+  Color(0xFF4DBFFF),
+];
+
+List<double> makeData(int count, int seed) {
+  final r = Random(seed);
+  return List.generate(count, (_) {
+    double value = r.nextDouble() * (10 - 1) + 1;
+    return double.parse(value.toStringAsFixed(2));
+  });
+}
+
+// ─── Demo Page ─────────────────────────────────────────────────────────────
+
+class DemoPage extends StatefulWidget {
+  final bool isDark;
+  final VoidCallback onToggleTheme;
+
+  const DemoPage({
+    super.key,
+    required this.isDark,
+    required this.onToggleTheme,
+  });
+
+  @override
+  State<DemoPage> createState() => _DemoPageState();
+}
+
+class _DemoPageState extends State<DemoPage> {
+  double _axes = 6;
+  double _series = 2;
+  bool _horizontalLabels = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final axesCount = _axes.round();
+    final seriesCount = _series.round();
+
+    final labels = _labels.take(axesCount).toList();
+    final dataSets = List.generate(seriesCount, (i) {
+      final c = _seriesColors[i % _seriesColors.length];
+      return RadarDataSet(
+        label: 'S${i + 1}',
+        data: makeData(axesCount, i + 1),
+        borderColor: c,
+        fillColor: c.withValues(alpha: 0.2),
+        dotColor: c,
+      );
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Radar Chart Plus',
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            spacing: 24,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Example 1: Multiple Data Series (NEW FEATURE)
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    isHorizontal = !isHorizontal;
-                  });
-                },
-                child: const Text(
-                  'Multiple Data Series',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            tooltip: widget.isDark ? 'Light mode' : 'Dark mode',
+            onPressed: widget.onToggleTheme,
+            icon: Icon(
+              widget.isDark
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: Column(
+        children: [
+          // ── Chart ──────────────────────────────────────────────────────────
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: RadarChartPlus(
+                key: ValueKey('$axesCount-$seriesCount'),
+                ticks: const [2, 4, 6, 8, 10],
+                labels: labels,
+                dataSets: dataSets,
+                dotTapEnabled: true,
+                tooltipStyle: const RadarTooltipStyle(),
+                horizontalLabels: _horizontalLabels,
+                maxWordsPerLine: 1,
+                labelSpacing: 4,
+                labelTextStyle: TextStyle(
+                  color: cs.onSurface.withValues(alpha: 0.75),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
+          ),
 
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 400,
-                child: RadarChartPlus(
-                  dotTapEnabled: true,
-                  tooltipStyle: RadarTooltipStyle(),
-                  labelSpacing: 0,
-                  maxWordsPerLine: 1,
-                  labelTextAlign: TextAlign.end,
-                  labelTextStyle: TextStyle(
-                    overflow: TextOverflow.ellipsis,
-                    color: Colors.white,
-                  ),
-                  horizontalLabels: isHorizontal,
-                  chartBorderColor: Colors.red,
-                  ticks: [2, 4, 6, 8, 10],
-                  labels: [
-                    'Speed',
-                    'Power',
-                    'Defense',
-                    'Agility',
-                    'Intelligence',
-                    'Tech & Development',
-                  ],
-                  dataSets: [
-                    RadarDataSet(
-                      data: [9, 2, 3, 4, 5, 6],
-                      borderColor: const Color(0xFF8072F3),
-                      fillColor: const Color(0x668072F3),
-                      label: 'Purple',
+          // ── Controls ───────────────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerLow,
+              border: Border(
+                top: BorderSide(color: cs.outlineVariant, width: 1),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _SliderRow(
+                  label: 'Axes',
+                  value: _axes,
+                  min: 3,
+                  max: 12,
+                  divisions: 9,
+                  onChanged: (v) => setState(() => _axes = v),
+                  color: _seriesColors[0],
+                ),
+                const SizedBox(height: 16),
+                _SliderRow(
+                  label: 'Series',
+                  value: _series,
+                  min: 1,
+                  max: 5,
+                  divisions: 4,
+                  onChanged: (v) => setState(() => _series = v),
+                  color: _seriesColors[1],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: Text(
+                        'Horizontal Labels',
+                        style: TextStyle(
+                          color: cs.onSurface.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                    RadarDataSet(
-                      data: [6, 7, 8, 9, 10, 1],
-                      borderColor: const Color(0xFFFF6B6B),
-                      fillColor: const Color(0x66FF6B6B),
-                      label: 'Red',
-                    ),
-                    RadarDataSet(
-                      data: [6, 5, 4, 2, 2, 3],
-                      borderColor: const Color(0xFF10FF00),
-                      fillColor: const Color(0x6210FF00),
-                      label: 'Green',
+                    const Spacer(),
+                    Switch(
+                      value: _horizontalLabels,
+                      onChanged: (v) => setState(() => _horizontalLabels = v),
+                      activeColor: _seriesColors[2],
                     ),
                   ],
                 ),
-              ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-              const Divider(height: 48),
+// ─── Slider row component ──────────────────────────────────────────────────
 
-              // Example 2: Many Axes (17 points)
-              const Text(
-                'Many Axes Example',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const Text(
-                'Radar chart with 17 data points',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 400,
-                height: 400,
-                child: RadarChartPlus(
-                  horizontalLabels: isHorizontal,
+class _SliderRow extends StatelessWidget {
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final int divisions;
+  final ValueChanged<double> onChanged;
+  final Color color;
 
-                  /// The color of the dots on the chart.
-                  dotColor: const Color(0xFF8072F3),
+  const _SliderRow({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.onChanged,
+    required this.color,
+  });
 
-                  /// The color of the chart border.
-                  chartBorderColor: const Color(0xFF8072F3),
-
-                  /// The color of the chart fill.
-                  chartFillColor: const Color(0x668072F3),
-
-                  /// The ticks to display on the chart.
-                  ticks: const [2, 4, 6, 8, 10],
-
-                  /// The labels to display on the chart.
-                  labels: const [
-                    '1',
-                    '2',
-                    '3',
-                    '4',
-                    '5',
-                    '6',
-                    '7',
-                    '8',
-                    '9',
-                    '10',
-                    '11',
-                    '12',
-                    '13',
-                    '14',
-                    '15',
-                    '16',
-                    '17',
-                  ],
-
-                  /// The data to display on the chart.
-                  data: const [
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7,
-                    8,
-                    9,
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6,
-                    7,
-                    8,
-                  ],
-                ),
-              ),
-
-              const Divider(height: 48),
-
-              // Example 3: Simple 5-Point Chart (Backward Compatibility)
-              const Text(
-                'Simple 5-Point Chart',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const Text(
-                'Basic usage with single data series',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 200,
-                height: 200,
-                child: RadarChartPlus(
-                  horizontalLabels: isHorizontal,
-                  labelSpacing: 0,
-
-                  /// The color of the dots on the chart.
-                  // dotColor: const Color(0xFF8072F3),
-                  dotColor: const Color(0xFF8072F3),
-
-                  /// The color of the chart border.
-                  chartBorderColor: const Color(0xFF8072F3),
-
-                  /// The color of the chart fill.
-                  chartFillColor: const Color(0x668072F3),
-
-                  /// The ticks to display on the chart.
-                  ticks: const [2, 4, 6],
-
-                  /// The labels to display on the chart.
-                  labels: const ['AA', 'BB', 'CC', 'DD', 'EE'],
-                  data: const [3, 2, 5, 2, 1],
-                ),
-              ),
-            ],
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        SizedBox(
+          width: 52,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: cs.onSurface.withValues(alpha: 0.7),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
-      ),
+        Expanded(
+          child: SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: color,
+              inactiveTrackColor: color.withValues(alpha: 0.2),
+              thumbColor: color,
+              overlayColor: color.withValues(alpha: 0.12),
+              trackHeight: 3,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            ),
+            child: Slider(
+              min: min,
+              max: max,
+              divisions: divisions,
+              value: value,
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 24,
+          child: Text(
+            '${value.round()}',
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

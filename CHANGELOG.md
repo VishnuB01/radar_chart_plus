@@ -1,3 +1,8 @@
+## [2.2.2]
+
+### Fixes
+- Added better demonstration application with all the implemented features.
+
 ## [2.2.1]
 
 ### Fixes
