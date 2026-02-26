@@ -5,7 +5,7 @@ This package helps you visualize multi-dimensional data in a clean, interactive 
 
 ---
 
-![screenshot](example/lib/assets/demo.gif)
+![screenshot](screenshots/multi_chart.jpg)
 
 
 ## Features
