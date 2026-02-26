@@ -1,3 +1,8 @@
+## [2.2.4]
+
+### Fixes
+- Fixes for pub scoring
+
 ## [2.2.3]
 
 ### Fixes
