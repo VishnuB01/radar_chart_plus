@@ -5,7 +5,7 @@ This package helps you visualize multi-dimensional data in a clean, interactive 
 
 ---
 
-![screenshot](https://github.com/VishnuB01/radar_chart_plus/blob/main/example/lib/assets/demo.gif)
+![screenshot](example/lib/assets/domo.gif)
 
 
 ## Features
