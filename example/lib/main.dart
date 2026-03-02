@@ -137,6 +137,8 @@ class _DemoPageState extends State<DemoPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: RadarChartPlus(
+                strokeWidth: 1.5,
+                ringsColor: Colors.grey,
                 key: ValueKey('$axesCount-$seriesCount'),
                 ticks: const [2, 4, 6, 8, 10],
                 labels: labels,

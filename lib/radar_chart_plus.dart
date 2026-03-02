@@ -241,6 +241,13 @@ class RadarChartPlus extends StatefulWidget {
   /// When null, the default [RadarTooltipStyle] is used.
   final RadarTooltipStyle? tooltipStyle;
 
+  /// Rings Color
+  /// When null, the default grey color is used.
+  final Color ringsColor;
+
+  /// Stroke width of the rings default set to 1.0
+  final double strokeWidth;
+
   /// Creates a radar chart with multiple data series.
   ///
   /// Use [dataSets] for multiple series or the legacy single-series parameters
@@ -266,6 +273,9 @@ class RadarChartPlus extends StatefulWidget {
     this.labelSpacing = 0,
     this.dotTapEnabled = true,
     this.tooltipStyle,
+    this.ringsColor = Colors.grey,
+    this.strokeWidth = 1.0,
+
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
       'This parameter will be removed in version 3.0.0.',
@@ -453,9 +463,8 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     }
 
     final painter = RadarChartPainter(
-      borderColor: Theme.of(
-        context,
-      ).colorScheme.onSurface.withValues(alpha: 0.5),
+      borderColor: widget.ringsColor,
+      strokeWidth: widget.strokeWidth,
       labelColor: Theme.of(context).colorScheme.onSurface,
       ticks: ticks,
       features: widget.labels,
@@ -744,6 +753,9 @@ class RadarChartPainter extends CustomPainter {
   /// The color for the grid lines (spokes and concentric circles).
   final Color borderColor;
 
+  /// Stroke width of the rings
+  final double strokeWidth;
+
   /// The rotation angles for each feature label.
   final List<double> labelAngles;
 
@@ -771,6 +783,7 @@ class RadarChartPainter extends CustomPainter {
   RadarChartPainter({
     required this.labelColor,
     required this.borderColor,
+    required this.strokeWidth,
     required this.ticks,
     required this.features,
     required this.dataSets,
@@ -808,7 +821,7 @@ class RadarChartPainter extends CustomPainter {
     final tickPaint = Paint()
       ..color = borderColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = strokeWidth;
 
     for (final tick in ticks) {
       final tickRadius = radius * tick / ticks.last;
