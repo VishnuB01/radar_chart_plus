@@ -1,12 +1,17 @@
+## [2.2.5]
+
+### Updates
+- Customization for radar chart rings style.
+
 ## [2.2.4]
 
 ### Fixes
-- Fixes for pub scoring
+- Fixes for pub scoring.
 
 ## [2.2.3]
 
 ### Fixes
-- Fixes for pub scoring
+- Fixes for pub scoring.
 
 ## [2.2.2]
 
@@ -21,13 +26,13 @@
 ## [2.2.0]
 
 ### Minor Update
-- Added tooltips for marker dots and customization options for tooltip
+- Added tooltips for marker dots and customization options for tooltip.
 
 ## [2.1.1]
 
 ### Minor Update
 - Updated chart labels alignment to display horizontally for improved readability and consistent visual presentation.
-- Label words per line & spacing options added
+- Label words per line & spacing options added.
 
 ## [2.1.0]
 
