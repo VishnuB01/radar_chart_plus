@@ -1,3 +1,9 @@
+## [2.2.6]
+
+### Fixes
+- Added demo site to view all the implemented features.
+- Minor changes for pub scoring
+
 ## [2.2.5]
 
 ### Updates

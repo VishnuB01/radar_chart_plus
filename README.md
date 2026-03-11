@@ -5,6 +5,12 @@ This package helps you visualize multi-dimensional data in a clean, interactive 
 
 ---
 
+## 🚀 Interactive Demo
+
+Check out the live demo to explore all available chart features and configurations.
+
+🔗 **Demo Website:** [View Chart Features Demo](https://sudharsan-005.github.io/radar_chart_demo/)
+
 ![screenshot](screenshots/multi_chart.jpg)
 
 
