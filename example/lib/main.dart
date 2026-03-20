@@ -90,7 +90,8 @@ class DemoPage extends StatefulWidget {
 class _DemoPageState extends State<DemoPage> {
   double _axes = 6;
   double _series = 2;
-  bool _horizontalLabels = true;
+  bool _horizontalLabels = false;
+  bool _customToolTip = false;
 
   @override
   Widget build(BuildContext context) {
@@ -141,10 +142,14 @@ class _DemoPageState extends State<DemoPage> {
                 ringsColor: Colors.grey,
                 key: ValueKey('$axesCount-$seriesCount'),
                 ticks: const [2, 4, 6, 8, 10],
+                customToolTipText: _customToolTip
+                    ? (label, value, dataSetLabel) =>
+                          '${dataSetLabel} ${label} = ${value.toStringAsFixed(1)} pts'
+                    : null,
                 labels: labels,
                 dataSets: dataSets,
                 dotTapEnabled: true,
-                tooltipStyle: const RadarTooltipStyle(),
+                tooltipStyle: const RadarTooltipStyle(showColorIndicator: true),
                 horizontalLabels: _horizontalLabels,
                 maxWordsPerLine: 1,
                 labelSpacing: 4,
@@ -202,10 +207,26 @@ class _DemoPageState extends State<DemoPage> {
                         ),
                       ),
                     ),
-                    const Spacer(),
                     Switch(
                       value: _horizontalLabels,
                       onChanged: (v) => setState(() => _horizontalLabels = v),
+                      activeColor: _seriesColors[2],
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: 100,
+                      child: Text(
+                        'Custom Tool Tip',
+                        style: TextStyle(
+                          color: cs.onSurface.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: _customToolTip,
+                      onChanged: (v) => setState(() => _customToolTip = v),
                       activeColor: _seriesColors[2],
                     ),
                   ],

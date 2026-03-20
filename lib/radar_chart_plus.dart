@@ -136,6 +136,10 @@ class RadarTooltipStyle {
   /// Tooltip center alignment. Default: true.
   final bool toolTipCenterAlignment;
 
+  /// Whether to show the small colored square indicator next to the text.
+  /// Defaults to true.
+  final bool showColorIndicator;
+
   const RadarTooltipStyle({
     this.width = 140.0,
     this.height = 40.0,
@@ -150,6 +154,7 @@ class RadarTooltipStyle {
     this.arrowWidth = 14.0,
     this.borderRadius = 8.0,
     this.toolTipCenterAlignment = true,
+    this.showColorIndicator = true,
   });
 }
 
@@ -241,6 +246,29 @@ class RadarChartPlus extends StatefulWidget {
   /// When null, the default [RadarTooltipStyle] is used.
   final RadarTooltipStyle? tooltipStyle;
 
+  /// Optional callback to customise the text shown inside the tooltip.
+  ///
+  /// The callback receives:
+  /// - [label] – the feature/axis label (e.g. `'Speed'`)
+  /// - [value] – the data-point value (e.g. `4.93`)
+  /// - [dataSetLabel] – the dataset label if provided (e.g. `'S1'`), or `null`
+  ///
+  /// Example – append a percentage sign:
+  /// ```dart
+  /// customToolTipText: (label, value, dataSetLabel) => '$label: $value%',
+  /// ```
+  ///
+  /// Example – use dataset label with currency:
+  /// ```dart
+  /// customToolTipText: (label, value, dataSetLabel) =>
+  ///     '${dataSetLabel ?? label}: \$${value.toStringAsFixed(2)}',
+  /// ```
+  ///
+  /// When null, the default format is used
+  /// (`"<dataSetLabel>: <value>"` or just `"<featureLabel>"`).
+  final String Function(String label, double value, String? dataSetLabel)?
+  customToolTipText;
+
   /// Rings Color
   /// When null, the default grey color is used.
   final Color ringsColor;
@@ -273,6 +301,7 @@ class RadarChartPlus extends StatefulWidget {
     this.labelSpacing = 0,
     this.dotTapEnabled = true,
     this.tooltipStyle,
+    this.customToolTipText,
     this.ringsColor = Colors.grey,
     this.strokeWidth = 1.0,
 
@@ -431,11 +460,21 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     final hit = _hitTest(details.localPosition, dots);
     setState(() {
       if (hit != null) {
+        final String tooltipLabel;
+        if (widget.customToolTipText != null) {
+          tooltipLabel = widget.customToolTipText!(
+            hit.label,
+            hit.value,
+            hit.dataSetLabel,
+          );
+        } else {
+          tooltipLabel = hit.dataSetLabel != null
+              ? '${hit.dataSetLabel}: ${hit.value}'
+              : hit.label;
+        }
         _activeTooltip = _TooltipInfo(
           position: hit.offset,
-          label: hit.dataSetLabel != null
-              ? '${hit.dataSetLabel}: ${hit.value}'
-              : hit.label,
+          label: tooltipLabel,
           value: hit.value,
           color: hit.color,
         );
@@ -574,7 +613,6 @@ class _RadarTooltipState extends State<_RadarTooltip>
   Widget build(BuildContext context) {
     final st = widget.style;
     final bubbleW = st.width;
-    final bubbleH = st.height;
     final arrowH = st.arrowHeight;
     const margin = 6.0;
     final labelAlignment = st.toolTipCenterAlignment;
@@ -584,16 +622,10 @@ class _RadarTooltipState extends State<_RadarTooltip>
 
     // Prefer placing the bubble above the dot (arrow points down toward it).
     // If it would clip the top edge, place it below (arrow points up).
-    final bool arrowDown = dotY - bubbleH - arrowH - margin >= 0;
-    final double totalH = bubbleH + arrowH;
+    final bool arrowDown = dotY - st.height - arrowH - margin >= 0;
 
     double left = dotX - bubbleW / 2;
     left = left.clamp(margin, widget.chartSize.width - bubbleW - margin);
-
-    final double top = arrowDown
-        ? dotY -
-              totalH // bubble above dot
-        : dotY; // bubble below dot
 
     // Arrow horizontal anchor: where the dot is relative to the bubble.
     final double arrowCenterX = (dotX - left).clamp(
@@ -601,55 +633,64 @@ class _RadarTooltipState extends State<_RadarTooltip>
       bubbleW - st.arrowWidth,
     );
 
+    // Build the content widget to measure its intrinsic height.
+    final content = Container(
+      width: bubbleW,
+      constraints: BoxConstraints(minHeight: st.height + arrowH),
+      padding: EdgeInsets.only(
+        top: arrowDown ? 0 : arrowH,
+        bottom: arrowDown ? arrowH : 0,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: labelAlignment
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.start,
+        children: [
+          const SizedBox(width: 10),
+          if (st.showColorIndicator) ...[
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: widget.info.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 7),
+          ],
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                widget.info.label,
+                style: st.textStyle,
+                softWrap: true,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
+      ),
+    );
+
     return Positioned(
       left: left,
-      top: top,
+      bottom: arrowDown ? widget.chartSize.height - dotY : null,
+      top: arrowDown ? null : dotY,
       child: FadeTransition(
         opacity: _fade,
         child: CustomPaint(
           painter: _TooltipBubblePainter(
             color: st.backgroundColor,
-            bubbleWidth: bubbleW,
-            bubbleHeight: bubbleH,
             arrowHeight: arrowH,
             arrowWidth: st.arrowWidth,
             arrowCenterX: arrowCenterX,
             radius: st.borderRadius,
             arrowDown: arrowDown,
           ),
-          size: Size(bubbleW, totalH),
-          child: SizedBox(
-            width: bubbleW,
-            height: totalH,
-            child: Align(
-              alignment: arrowDown
-                  ? Alignment.topCenter
-                  : Alignment.bottomCenter,
-              child: SizedBox(
-                height: bubbleH,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: labelAlignment
-                      ? MainAxisAlignment.center
-                      : MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(width: 10),
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: widget.info.color,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 7),
-                    Text(widget.info.label, style: st.textStyle, maxLines: 1),
-                    const SizedBox(width: 6),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          child: content,
         ),
       ),
     );
@@ -662,8 +703,6 @@ class _RadarTooltipState extends State<_RadarTooltip>
 /// [arrowDown] = false → arrow points upward  (bubble is below the dot)
 class _TooltipBubblePainter extends CustomPainter {
   final Color color;
-  final double bubbleWidth;
-  final double bubbleHeight;
   final double arrowHeight;
   final double arrowWidth;
   final double arrowCenterX;
@@ -672,8 +711,6 @@ class _TooltipBubblePainter extends CustomPainter {
 
   const _TooltipBubblePainter({
     required this.color,
-    required this.bubbleWidth,
-    required this.bubbleHeight,
     required this.arrowHeight,
     required this.arrowWidth,
     required this.arrowCenterX,
@@ -692,28 +729,30 @@ class _TooltipBubblePainter extends CustomPainter {
       ..color = const Color(0x44000000)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
-    final path = _buildPath();
+    final path = _buildPath(size);
     canvas.drawPath(path, shadowPaint);
     canvas.drawPath(path, paint);
   }
 
-  Path _buildPath() {
+  Path _buildPath(Size size) {
     final path = Path();
     final double ax = arrowCenterX;
     final double hw = arrowWidth / 2;
+    final double bubbleW = size.width;
+    final double bubbleH = size.height - arrowHeight;
 
     if (arrowDown) {
-      // Bubble occupies [0, bubbleHeight]; arrow below it.
-      final rect = Rect.fromLTWH(0, 0, bubbleWidth, bubbleHeight);
+      // Bubble occupies [0, bubbleH]; arrow below it.
+      final rect = Rect.fromLTWH(0, 0, bubbleW, bubbleH);
       path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
       // Arrow triangle pointing down
-      path.moveTo(ax - hw, bubbleHeight);
-      path.lineTo(ax + hw, bubbleHeight);
-      path.lineTo(ax, bubbleHeight + arrowHeight);
+      path.moveTo(ax - hw, bubbleH);
+      path.lineTo(ax + hw, bubbleH);
+      path.lineTo(ax, bubbleH + arrowHeight);
       path.close();
     } else {
       // Arrow occupies [0, arrowHeight]; bubble below it.
-      final rect = Rect.fromLTWH(0, arrowHeight, bubbleWidth, bubbleHeight);
+      final rect = Rect.fromLTWH(0, arrowHeight, bubbleW, bubbleH);
       path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)));
       // Arrow triangle pointing up
       path.moveTo(ax - hw, arrowHeight);
@@ -727,8 +766,6 @@ class _TooltipBubblePainter extends CustomPainter {
   @override
   bool shouldRepaint(_TooltipBubblePainter old) =>
       old.color != color ||
-      old.bubbleWidth != bubbleWidth ||
-      old.bubbleHeight != bubbleHeight ||
       old.arrowHeight != arrowHeight ||
       old.arrowWidth != arrowWidth ||
       old.arrowCenterX != arrowCenterX ||

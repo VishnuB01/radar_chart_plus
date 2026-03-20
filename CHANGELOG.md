@@ -1,3 +1,10 @@
+## [2.3.0]
+
+### Updates
+- Customization option for tooltip text
+- Option to enable/disable tooltip color indicator
+- Minor changes for pub scoring
+
 ## [2.2.6]
 
 ### Fixes
