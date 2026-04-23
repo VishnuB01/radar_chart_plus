@@ -92,6 +92,9 @@ class _DemoPageState extends State<DemoPage> {
   double _series = 2;
   bool _horizontalLabels = false;
   bool _customToolTip = false;
+  bool _polygonShape = false;
+  Color _ringsColor = Colors.grey.withValues(alpha: 0.2);
+  Color _borderColor = Colors.grey.withValues(alpha: 0.2);
 
   @override
   Widget build(BuildContext context) {
@@ -138,8 +141,12 @@ class _DemoPageState extends State<DemoPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: RadarChartPlus(
+                shape: _polygonShape
+                    ? RadarChartShape.polygon
+                    : RadarChartShape.circle,
                 strokeWidth: 1.5,
-                ringsColor: Colors.grey,
+                ringsColor: _ringsColor,
+                borderColor: _borderColor,
                 key: ValueKey('$axesCount-$seriesCount'),
                 ticks: const [2, 4, 6, 8, 10],
                 customToolTipText: _customToolTip
@@ -173,6 +180,8 @@ class _DemoPageState extends State<DemoPage> {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 10,
               children: [
                 _SliderRow(
                   label: 'Axes',
@@ -228,6 +237,107 @@ class _DemoPageState extends State<DemoPage> {
                       value: _customToolTip,
                       onChanged: (v) => setState(() => _customToolTip = v),
                       activeColor: _seriesColors[2],
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: Text(
+                        'Polygon shape',
+                        style: TextStyle(
+                          color: cs.onSurface.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: _polygonShape,
+                      onChanged: (v) => setState(() => _polygonShape = v),
+                      activeColor: _seriesColors[2],
+                    ),
+                    Spacer(),
+                    Column(
+                      spacing: 10,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Ring Color',
+                              style: TextStyle(
+                                color: cs.onSurface.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            for (final color in [
+                              Colors.grey.withValues(alpha: 0.2),
+                              Colors.white.withValues(alpha: 0.5),
+                              Colors.red.withValues(alpha: 0.5),
+                              Colors.green.withValues(alpha: 0.5),
+                              Colors.blue.withValues(alpha: 0.5),
+                            ])
+                              GestureDetector(
+                                onTap: () => setState(() => _ringsColor = color),
+                                child: Container(
+                                  margin: const EdgeInsets.only(left: 8),
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: _ringsColor == color
+                                          ? cs.primary
+                                          : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'Border Color',
+                              style: TextStyle(
+                                color: cs.onSurface.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            for (final color in [
+                              Colors.grey.withValues(alpha: 0.2),
+                              Colors.white.withValues(alpha: 0.5),
+                              Colors.red.withValues(alpha: 0.5),
+                              Colors.green.withValues(alpha: 0.5),
+                              Colors.blue.withValues(alpha: 0.5),
+                            ])
+                              GestureDetector(
+                                onTap: () => setState(() => _borderColor = color),
+                                child: Container(
+                                  margin: const EdgeInsets.only(left: 8),
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: _borderColor == color
+                                          ? cs.primary
+                                          : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),

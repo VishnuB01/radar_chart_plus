@@ -3,6 +3,15 @@ library;
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+/// The shape of the radar chart's background web.
+enum RadarChartShape {
+  /// The background web is drawn as concentric circles.
+  circle,
+
+  /// The background web is drawn as concentric polygons with corners at the axes.
+  polygon,
+}
+
 /// Represents a single data series in a radar chart.
 ///
 /// Each [RadarDataSet] contains the data points, colors, and optional label
@@ -269,12 +278,20 @@ class RadarChartPlus extends StatefulWidget {
   final String Function(String label, double value, String? dataSetLabel)?
   customToolTipText;
 
-  /// Rings Color
+  /// Rings Color (for inner rings and spokes)
   /// When null, the default grey color is used.
   final Color ringsColor;
 
+  /// Border Color (for the outermost ring)
+  /// When null, the default grey color is used.
+  final Color borderColor;
+
   /// Stroke width of the rings default set to 1.0
   final double strokeWidth;
+
+  /// The shape of the radar chart's background web.
+  /// Defaults to [RadarChartShape.circle].
+  final RadarChartShape shape;
 
   /// Creates a radar chart with multiple data series.
   ///
@@ -303,7 +320,9 @@ class RadarChartPlus extends StatefulWidget {
     this.tooltipStyle,
     this.customToolTipText,
     this.ringsColor = Colors.grey,
+    this.borderColor = Colors.grey,
     this.strokeWidth = 1.0,
+    this.shape = RadarChartShape.circle,
 
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
@@ -502,7 +521,8 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     }
 
     final painter = RadarChartPainter(
-      borderColor: widget.ringsColor,
+      ringsColor: widget.ringsColor,
+      borderColor: widget.borderColor,
       strokeWidth: widget.strokeWidth,
       labelColor: Theme.of(context).colorScheme.onSurface,
       ticks: ticks,
@@ -515,6 +535,7 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
       maxWordsPerLine: widget.maxWordsPerLine,
       labelTextAlign: widget.labelTextAlign,
       labelSpacing: widget.labelSpacing,
+      shape: widget.shape,
     );
 
     if (!widget.dotTapEnabled) {
@@ -787,7 +808,10 @@ class RadarChartPainter extends CustomPainter {
   /// The color for the feature labels.
   final Color labelColor;
 
-  /// The color for the grid lines (spokes and concentric circles).
+  /// The color for the inner grid rings and spokes.
+  final Color ringsColor;
+
+  /// The color for the outermost ring.
   final Color borderColor;
 
   /// Stroke width of the rings
@@ -816,9 +840,13 @@ class RadarChartPainter extends CustomPainter {
   /// The gap between the spoke tip and the feature label.
   final double labelSpacing;
 
+  /// The shape of the radar chart's background web.
+  final RadarChartShape shape;
+
   /// Creates a [RadarChartPainter].
   RadarChartPainter({
     required this.labelColor,
+    required this.ringsColor,
     required this.borderColor,
     required this.strokeWidth,
     required this.ticks,
@@ -831,6 +859,7 @@ class RadarChartPainter extends CustomPainter {
     this.maxWordsPerLine = 1,
     this.labelTextAlign = TextAlign.center,
     this.labelSpacing = 4.0,
+    this.shape = RadarChartShape.circle,
   }) : assert(ticks.isNotEmpty, 'ticks cannot be empty'),
        assert(features.isNotEmpty, 'features cannot be empty'),
        assert(dataSets.isNotEmpty, 'dataSets cannot be empty'),
@@ -855,14 +884,34 @@ class RadarChartPainter extends CustomPainter {
     final angleStep = (2 * pi) / features.length;
 
     // 1. Draw the concentric circles (ticks) for the grid.
-    final tickPaint = Paint()
-      ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
+    for (var i = 0; i < ticks.length; i++) {
+      final tick = ticks[i];
+      final isLastTick = i == ticks.length - 1;
+      final currentTickColor = isLastTick ? borderColor : ringsColor;
 
-    for (final tick in ticks) {
+      final tickPaint = Paint()
+        ..color = currentTickColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth;
+
       final tickRadius = radius * tick / ticks.last;
-      canvas.drawCircle(centerOffset, tickRadius, tickPaint);
+      if (shape == RadarChartShape.polygon) {
+        final path = Path();
+        for (int i = 0; i < features.length; i++) {
+          final currentAngle = angleStep * i - pi / 2;
+          final x = centerX + tickRadius * cos(currentAngle);
+          final y = centerY + tickRadius * sin(currentAngle);
+          if (i == 0) {
+            path.moveTo(x, y);
+          } else {
+            path.lineTo(x, y);
+          }
+        }
+        path.close();
+        canvas.drawPath(path, tickPaint);
+      } else {
+        canvas.drawCircle(centerOffset, tickRadius, tickPaint);
+      }
     }
 
     // 2. Draw the numerical labels for each tick circle.
@@ -888,7 +937,7 @@ class RadarChartPainter extends CustomPainter {
 
     // 3. Draw the radial spokes and their corresponding feature labels.
     final featureLinePaint = Paint()
-      ..color = borderColor
+      ..color = ringsColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
