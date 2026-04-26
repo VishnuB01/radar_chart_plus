@@ -134,217 +134,232 @@ class _DemoPageState extends State<DemoPage> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          // ── Chart ──────────────────────────────────────────────────────────
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: RadarChartPlus(
-                shape: _polygonShape
-                    ? RadarChartShape.polygon
-                    : RadarChartShape.circle,
-                strokeWidth: 1.5,
-                ringsColor: _ringsColor,
-                borderColor: _borderColor,
-                key: ValueKey('$axesCount-$seriesCount'),
-                ticks: const [2, 4, 6, 8, 10],
-                customToolTipText: _customToolTip
-                    ? (label, value, dataSetLabel) =>
-                          '${dataSetLabel} ${label} = ${value.toStringAsFixed(1)} pts'
-                    : null,
-                labels: labels,
-                dataSets: dataSets,
-                dotTapEnabled: true,
-                tooltipStyle: const RadarTooltipStyle(showColorIndicator: true),
-                horizontalLabels: _horizontalLabels,
-                maxWordsPerLine: 1,
-                labelSpacing: 4,
-                labelTextStyle: TextStyle(
-                  color: cs.onSurface.withValues(alpha: 0.75),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // ── Chart ──────────────────────────────────────────────────────────
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: RadarChartPlus(
+                  shape: _polygonShape
+                      ? RadarChartShape.polygon
+                      : RadarChartShape.circle,
+                  ringsStyle: RadarChartLineStyle(
+                    color: _ringsColor,
+                    strokeWidth: 1.5,
+                  ),
+                  borderStyle: RadarChartLineStyle(
+                    color: _borderColor,
+                    strokeWidth: 1.5,
+                  ),
+                  key: ValueKey('$axesCount-$seriesCount'),
+                  ticks: const [2.0, 4.0, 6.0, 8.0, 10.0],
+                  tickFractionDigits: 0,
+                  tickTextOffset: const Offset(5, 0),
+                  customToolTipText: _customToolTip
+                      ? (label, value, dataSetLabel) =>
+                            '${dataSetLabel} ${label} = ${value.toStringAsFixed(1)} pts'
+                      : null,
+                  labels: labels,
+                  dataSets: dataSets,
+                  dotTapEnabled: true,
+                  tooltipStyle: const RadarTooltipStyle(
+                    showColorIndicator: true,
+                  ),
+                  horizontalLabels: _horizontalLabels,
+                  maxWordsPerLine: 1,
+                  labelSpacing: 4,
+                  labelTextStyle: TextStyle(
+                    color: cs.onSurface.withValues(alpha: 0.75),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
+            SizedBox(height: 40),
 
-          // ── Controls ───────────────────────────────────────────────────────
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerLow,
-              border: Border(
-                top: BorderSide(color: cs.outlineVariant, width: 1),
+            // ── Controls ───────────────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerLow,
+                border: Border(
+                  top: BorderSide(color: cs.outlineVariant, width: 1),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  _SliderRow(
+                    label: 'Axes',
+                    value: _axes,
+                    min: 3,
+                    max: 12,
+                    divisions: 9,
+                    onChanged: (v) => setState(() => _axes = v),
+                    color: _seriesColors[0],
+                  ),
+                  const SizedBox(height: 16),
+                  _SliderRow(
+                    label: 'Series',
+                    value: _series,
+                    min: 1,
+                    max: 5,
+                    divisions: 4,
+                    onChanged: (v) => setState(() => _series = v),
+                    color: _seriesColors[1],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          'Horizontal Labels',
+                          style: TextStyle(
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _horizontalLabels,
+                        onChanged: (v) => setState(() => _horizontalLabels = v),
+                        activeColor: _seriesColors[2],
+                      ),
+                      const Spacer(),
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          'Custom Tool Tip',
+                          style: TextStyle(
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _customToolTip,
+                        onChanged: (v) => setState(() => _customToolTip = v),
+                        activeColor: _seriesColors[2],
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          'Polygon shape',
+                          style: TextStyle(
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _polygonShape,
+                        onChanged: (v) => setState(() => _polygonShape = v),
+                        activeColor: _seriesColors[2],
+                      ),
+                      Spacer(),
+                      Column(
+                        spacing: 10,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Ring Color',
+                                style: TextStyle(
+                                  color: cs.onSurface.withValues(alpha: 0.7),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              for (final color in [
+                                Colors.grey.withValues(alpha: 0.2),
+                                Colors.white.withValues(alpha: 0.5),
+                                Colors.red.withValues(alpha: 0.5),
+                                Colors.green.withValues(alpha: 0.5),
+                                Colors.blue.withValues(alpha: 0.5),
+                              ])
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _ringsColor = color),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: _ringsColor == color
+                                            ? cs.primary
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                'Border Color',
+                                style: TextStyle(
+                                  color: cs.onSurface.withValues(alpha: 0.7),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              for (final color in [
+                                Colors.grey.withValues(alpha: 0.2),
+                                Colors.white.withValues(alpha: 0.5),
+                                Colors.red.withValues(alpha: 0.5),
+                                Colors.green.withValues(alpha: 0.5),
+                                Colors.blue.withValues(alpha: 0.5),
+                              ])
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _borderColor = color),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: _borderColor == color
+                                            ? cs.primary
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 10,
-              children: [
-                _SliderRow(
-                  label: 'Axes',
-                  value: _axes,
-                  min: 3,
-                  max: 12,
-                  divisions: 9,
-                  onChanged: (v) => setState(() => _axes = v),
-                  color: _seriesColors[0],
-                ),
-                const SizedBox(height: 16),
-                _SliderRow(
-                  label: 'Series',
-                  value: _series,
-                  min: 1,
-                  max: 5,
-                  divisions: 4,
-                  onChanged: (v) => setState(() => _series = v),
-                  color: _seriesColors[1],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: Text(
-                        'Horizontal Labels',
-                        style: TextStyle(
-                          color: cs.onSurface.withValues(alpha: 0.7),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Switch(
-                      value: _horizontalLabels,
-                      onChanged: (v) => setState(() => _horizontalLabels = v),
-                      activeColor: _seriesColors[2],
-                    ),
-                    const Spacer(),
-                    SizedBox(
-                      width: 100,
-                      child: Text(
-                        'Custom Tool Tip',
-                        style: TextStyle(
-                          color: cs.onSurface.withValues(alpha: 0.7),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Switch(
-                      value: _customToolTip,
-                      onChanged: (v) => setState(() => _customToolTip = v),
-                      activeColor: _seriesColors[2],
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: Text(
-                        'Polygon shape',
-                        style: TextStyle(
-                          color: cs.onSurface.withValues(alpha: 0.7),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Switch(
-                      value: _polygonShape,
-                      onChanged: (v) => setState(() => _polygonShape = v),
-                      activeColor: _seriesColors[2],
-                    ),
-                    Spacer(),
-                    Column(
-                      spacing: 10,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Ring Color',
-                              style: TextStyle(
-                                color: cs.onSurface.withValues(alpha: 0.7),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            for (final color in [
-                              Colors.grey.withValues(alpha: 0.2),
-                              Colors.white.withValues(alpha: 0.5),
-                              Colors.red.withValues(alpha: 0.5),
-                              Colors.green.withValues(alpha: 0.5),
-                              Colors.blue.withValues(alpha: 0.5),
-                            ])
-                              GestureDetector(
-                                onTap: () => setState(() => _ringsColor = color),
-                                child: Container(
-                                  margin: const EdgeInsets.only(left: 8),
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: _ringsColor == color
-                                          ? cs.primary
-                                          : Colors.transparent,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              'Border Color',
-                              style: TextStyle(
-                                color: cs.onSurface.withValues(alpha: 0.7),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            for (final color in [
-                              Colors.grey.withValues(alpha: 0.2),
-                              Colors.white.withValues(alpha: 0.5),
-                              Colors.red.withValues(alpha: 0.5),
-                              Colors.green.withValues(alpha: 0.5),
-                              Colors.blue.withValues(alpha: 0.5),
-                            ])
-                              GestureDetector(
-                                onTap: () => setState(() => _borderColor = color),
-                                child: Container(
-                                  margin: const EdgeInsets.only(left: 8),
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: _borderColor == color
-                                          ? cs.primary
-                                          : Colors.transparent,
-                                      width: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,3 +1,11 @@
+## [3.0.0]
+
+### Breaking Changes
+- Ticks are upgraded to double and can be customized its decimal points
+- New polygon chart shape option available
+- More Customization options available for:
+- ringStyle, borderStyle, tickTextStyle, tickOffset.
+
 ## [2.3.0]
 
 ### Updates

@@ -167,13 +167,24 @@ class RadarTooltipStyle {
   });
 }
 
+/// Visual style for lines in the radar chart (e.g., rings, borders, spokes).
+class RadarChartLineStyle {
+  /// The color of the line.
+  final Color color;
+
+  /// The stroke width of the line.
+  final double strokeWidth;
+
+  const RadarChartLineStyle({this.color = Colors.grey, this.strokeWidth = 1.0});
+}
+
 /// A widget that displays a radar chart (also known as a spider chart or web chart).
 ///
 /// This chart is useful for visualizing multivariate data in a 2D plot.
 class RadarChartPlus extends StatefulWidget {
-  /// A list of integers representing the concentric circles (ticks) of the chart.
+  /// A list of numbers representing the concentric circles (ticks) of the chart.
   /// If not provided, it will be generated automatically based on the max value in [data].
-  final List<int>? ticks;
+  final List<double>? ticks;
 
   /// The labels for each axis of the radar chart.
   /// The length of this list must be equal to the length of data in each dataset.
@@ -204,6 +215,18 @@ class RadarChartPlus extends StatefulWidget {
   /// If null, [chartBorderColor] is used.
   /// For multiple series, use [dataSets] instead.
   final Color? dotColor;
+
+  /// The text style for the tick labels.
+  /// If null, defaults to TextStyle(color: labelColor).
+  final TextStyle? tickTextStyle;
+
+  /// The number of fractional digits to display for the tick labels.
+  /// Defaults to 0, which makes them look like integers.
+  final int tickFractionDigits;
+
+  /// The offset of the tick labels from their default position.
+  /// Defaults to `Offset(6, -5)` (6 pixels right, 5 pixels up).
+  final Offset tickTextOffset;
 
   /// The text style for feature labels.
   /// If null, defaults to TextStyle(color: labelColor, fontWeight: FontWeight.bold).
@@ -278,16 +301,13 @@ class RadarChartPlus extends StatefulWidget {
   final String Function(String label, double value, String? dataSetLabel)?
   customToolTipText;
 
-  /// Rings Color (for inner rings and spokes)
-  /// When null, the default grey color is used.
-  final Color ringsColor;
+  /// Rings Style (for inner rings and spokes).
+  /// Contains color and stroke width settings.
+  final RadarChartLineStyle ringsStyle;
 
-  /// Border Color (for the outermost ring)
-  /// When null, the default grey color is used.
-  final Color borderColor;
-
-  /// Stroke width of the rings default set to 1.0
-  final double strokeWidth;
+  /// Border Style (for the outermost ring).
+  /// Contains color and stroke width settings.
+  final RadarChartLineStyle borderStyle;
 
   /// The shape of the radar chart's background web.
   /// Defaults to [RadarChartShape.circle].
@@ -319,10 +339,12 @@ class RadarChartPlus extends StatefulWidget {
     this.dotTapEnabled = true,
     this.tooltipStyle,
     this.customToolTipText,
-    this.ringsColor = Colors.grey,
-    this.borderColor = Colors.grey,
-    this.strokeWidth = 1.0,
+    this.ringsStyle = const RadarChartLineStyle(),
+    this.borderStyle = const RadarChartLineStyle(),
     this.shape = RadarChartShape.circle,
+    this.tickTextStyle,
+    this.tickFractionDigits = 0,
+    this.tickTextOffset = const Offset(6, -5),
 
     @Deprecated(
       'Use dataSets instead for better flexibility and multi-series support. '
@@ -417,7 +439,7 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
     }
   }
 
-  late List<int> ticks;
+  late List<double> ticks;
 
   /// Computes the pixel position of every dot given the widget [size].
   ///
@@ -514,16 +536,17 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
         if (dataMax > maxValue) maxValue = dataMax;
       }
       final largest = maxValue.ceil();
-      // Create a list of integers from 1 to the largest data value.
-      ticks = largest > 0 ? List<int>.generate(largest, (i) => i + 1) : [1];
+      // Create a list of numbers from 1 to the largest data value.
+      ticks = largest > 0
+          ? List<double>.generate(largest, (i) => (i + 1).toDouble())
+          : [1.0];
     } else {
       ticks = widget.ticks!;
     }
 
     final painter = RadarChartPainter(
-      ringsColor: widget.ringsColor,
-      borderColor: widget.borderColor,
-      strokeWidth: widget.strokeWidth,
+      ringsStyle: widget.ringsStyle,
+      borderStyle: widget.borderStyle,
       labelColor: Theme.of(context).colorScheme.onSurface,
       ticks: ticks,
       features: widget.labels,
@@ -536,6 +559,9 @@ class _RadarChartPlusState extends State<RadarChartPlus> {
       labelTextAlign: widget.labelTextAlign,
       labelSpacing: widget.labelSpacing,
       shape: widget.shape,
+      tickTextStyle: widget.tickTextStyle,
+      tickFractionDigits: widget.tickFractionDigits,
+      tickTextOffset: widget.tickTextOffset,
     );
 
     if (!widget.dotTapEnabled) {
@@ -797,7 +823,7 @@ class _TooltipBubblePainter extends CustomPainter {
 /// A custom painter for drawing the radar chart.
 class RadarChartPainter extends CustomPainter {
   /// The tick values for the concentric circles.
-  final List<int> ticks;
+  final List<double> ticks;
 
   /// The labels for each axis.
   final List<String> features;
@@ -808,17 +834,26 @@ class RadarChartPainter extends CustomPainter {
   /// The color for the feature labels.
   final Color labelColor;
 
-  /// The color for the inner grid rings and spokes.
-  final Color ringsColor;
+  /// The style for the inner grid rings and spokes.
+  final RadarChartLineStyle ringsStyle;
 
-  /// The color for the outermost ring.
-  final Color borderColor;
-
-  /// Stroke width of the rings
-  final double strokeWidth;
+  /// The style for the outermost ring.
+  final RadarChartLineStyle borderStyle;
 
   /// The rotation angles for each feature label.
   final List<double> labelAngles;
+
+  /// The text style for the tick labels.
+  /// If null, defaults to TextStyle(color: labelColor).
+  final TextStyle? tickTextStyle;
+
+  /// The number of fractional digits to display for the tick labels.
+  /// Defaults to 0, which makes them look like integers.
+  final int tickFractionDigits;
+
+  /// The offset of the tick labels from their default position.
+  /// Defaults to `Offset(6, -5)` (6 pixels right, 5 pixels up).
+  final Offset tickTextOffset;
 
   /// The text style for feature labels.
   /// If null, defaults to TextStyle(color: labelColor, fontWeight: FontWeight.bold).
@@ -846,9 +881,8 @@ class RadarChartPainter extends CustomPainter {
   /// Creates a [RadarChartPainter].
   RadarChartPainter({
     required this.labelColor,
-    required this.ringsColor,
-    required this.borderColor,
-    required this.strokeWidth,
+    required this.ringsStyle,
+    required this.borderStyle,
     required this.ticks,
     required this.features,
     required this.dataSets,
@@ -860,6 +894,9 @@ class RadarChartPainter extends CustomPainter {
     this.labelTextAlign = TextAlign.center,
     this.labelSpacing = 4.0,
     this.shape = RadarChartShape.circle,
+    this.tickTextStyle,
+    this.tickFractionDigits = 0,
+    this.tickTextOffset = const Offset(6, -5),
   }) : assert(ticks.isNotEmpty, 'ticks cannot be empty'),
        assert(features.isNotEmpty, 'features cannot be empty'),
        assert(dataSets.isNotEmpty, 'dataSets cannot be empty'),
@@ -887,12 +924,12 @@ class RadarChartPainter extends CustomPainter {
     for (var i = 0; i < ticks.length; i++) {
       final tick = ticks[i];
       final isLastTick = i == ticks.length - 1;
-      final currentTickColor = isLastTick ? borderColor : ringsColor;
+      final currentStyle = isLastTick ? borderStyle : ringsStyle;
 
       final tickPaint = Paint()
-        ..color = currentTickColor
+        ..color = currentStyle.color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth;
+        ..strokeWidth = currentStyle.strokeWidth;
 
       final tickRadius = radius * tick / ticks.last;
       if (shape == RadarChartShape.polygon) {
@@ -922,24 +959,24 @@ class RadarChartPainter extends CustomPainter {
     for (var tick in ticks) {
       final tickRadius = radius * tick / ticks.last;
       textPainter.text = TextSpan(
-        text: tick.toString(),
-        style: TextStyle(color: labelColor),
+        text: tick.toStringAsFixed(tickFractionDigits),
+        style: tickTextStyle ?? TextStyle(color: labelColor),
       );
       textPainter.layout();
       textPainter.paint(
         canvas,
         Offset(
-          centerX - (textPainter.width / 2) + 6,
-          centerY - (tickRadius - textPainter.height / 2) - 5,
+          centerX - (textPainter.width / 2) + tickTextOffset.dx,
+          centerY - (tickRadius - textPainter.height / 2) + tickTextOffset.dy,
         ),
       );
     }
 
     // 3. Draw the radial spokes and their corresponding feature labels.
     final featureLinePaint = Paint()
-      ..color = ringsColor
+      ..color = ringsStyle.color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = ringsStyle.strokeWidth;
 
     features.asMap().forEach((index, feature) {
       final currentAngle = angleStep * index - pi / 2; // Start from the top.
