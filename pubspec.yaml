@@ -8,7 +8,7 @@ topics:
   - visualization
   - radar-chart
   - graph
-  - diagram
+  - spider
 
 screenshots:
   - description: "This image describes multi data series radar chart"
